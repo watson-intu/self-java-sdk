@@ -117,6 +117,7 @@ public class TopicClient extends Endpoint {
      */
     @OnClose
     public void onClose(Session userSession, CloseReason reason) {
+    	this.session = null;
         System.out.println("closing websocket");
     }
 
@@ -130,7 +131,8 @@ public class TopicClient extends Endpoint {
     }
 
 	@Override
-	public void onOpen(Session arg0, EndpointConfig arg1) {
+	public void onOpen(Session session, EndpointConfig arg1) {
+		this.session = session;
 		System.out.println("opening websocket!");	
 	}
 	
@@ -143,17 +145,18 @@ public class TopicClient extends Endpoint {
 		    if (session == null) {
 		    	return;
 		    }
+		    System.out.println("Sending message: " + message);
 		    session.getAsyncRemote().sendText(message);
 		}
     }
     
-    public void publish(String path, String data, boolean persisted) {
+    public void publish(String path, JsonObject data, boolean persisted) {
     	JsonObject wrapperObject = new JsonObject();
     	JsonArray pathArray = new JsonArray();
     	pathArray.add(new JsonPrimitive(path));
     	wrapperObject.add("targets", pathArray);
     	wrapperObject.addProperty("msg", "publish_at");
-    	wrapperObject.addProperty("data", data);
+    	wrapperObject.add("data", data);
     	wrapperObject.addProperty("binary", false);
     	wrapperObject.addProperty("persisted", persisted);
     	this.sendMessage(wrapperObject.toString());

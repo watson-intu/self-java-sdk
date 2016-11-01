@@ -1,8 +1,12 @@
 package com.ibm.watson.self.topics;
 
 import java.io.IOException;
+
 import javax.websocket.DeploymentException;
+
 import com.ibm.watson.self.constants.SelfConfigurationConstants;
+import com.ibm.watson.self.gestures.DisplayGesture;
+import com.ibm.watson.self.gestures.GestureManager;
 
 public class TopicClientTest {
 
@@ -21,5 +25,6 @@ public class TopicClientTest {
 			e.printStackTrace();
 		}
 		
+		GestureManager.getInstance().addGesture(new DisplayGesture(), true);
 	}
 }

@@ -34,7 +34,7 @@ public class GestureManager implements IEvent {
 				wrapperObject.addProperty("gestureId", gestureId);
 				wrapperObject.addProperty("instanceId", gesture.getInstanceId());
 				wrapperObject.addProperty("override", override);
-				TopicClient.getInstance().publish("gesture-manager", wrapperObject.toString(), false);
+				TopicClient.getInstance().publish("gesture-manager", wrapperObject, false);
 				gesturesMap.put(gestureId, gesture);
 				overrideMap.put(gestureId, override);
 				System.out.println("Added gesture: " + gestureId);
@@ -52,7 +52,7 @@ public class GestureManager implements IEvent {
 				wrapperObject.addProperty("event", "remove_gesture_proxy");
 				wrapperObject.addProperty("gestureId", gestureId);
 				wrapperObject.addProperty("instanceId", gesture.getInstanceId());
-				TopicClient.getInstance().publish("gesture-manager", wrapperObject.toString(), false);
+				TopicClient.getInstance().publish("gesture-manager", wrapperObject, false);
 				System.out.println("Removed gesture: " + gestureId);
 			}
 		}
@@ -63,7 +63,6 @@ public class GestureManager implements IEvent {
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		String gestureId = wrapperObject.get("gestureId").getAsString();
 		String instanceId = wrapperObject.get("instanceId").getAsString();
-		String gestureKey = gestureId + "/" + instanceId;
 		String eventName = wrapperObject.get("event").getAsString();
 		IGesture gesture = gesturesMap.get(gestureId);
 		if(gesture == null) {
@@ -86,7 +85,7 @@ public class GestureManager implements IEvent {
 			JsonObject failedObject = new JsonObject();
 			failedObject.addProperty("failed_event", eventName);
 			failedObject.addProperty("event", "error");
-			TopicClient.getInstance().publish("gesture-manager", failedObject.toString(), false);
+			TopicClient.getInstance().publish("gesture-manager", failedObject, false);
 		}
 	}
 	
@@ -96,6 +95,6 @@ public class GestureManager implements IEvent {
 		wrapperObject.addProperty("gestureId", gesture.getGestureId());
 		wrapperObject.addProperty("instanceId", gesture.getInstanceId());
 		wrapperObject.addProperty("error", error);
-		TopicClient.getInstance().publish("gesture-manager", wrapperObject.toString(), false);
+		TopicClient.getInstance().publish("gesture-manager", wrapperObject, false);
 	}
 }
