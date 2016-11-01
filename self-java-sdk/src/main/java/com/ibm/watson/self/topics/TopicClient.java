@@ -3,6 +3,7 @@ package com.ibm.watson.self.topics;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,8 @@ public class TopicClient extends Endpoint {
     private Session session;
     private URI uri;
     private ClientManager client;
+    private HashMap<String, IEvent> subscriptionMap = new HashMap<String, IEvent>();
+    private static TopicClient instance = null;
     
     /**
      * Modifier for HTTP handshake request.
@@ -72,6 +75,13 @@ public class TopicClient extends Endpoint {
     	this.sessionLock = new Object();
     }
     
+    public static TopicClient getInstance() {
+    	if(instance == null) {
+    		instance = new TopicClient();
+    	}    	
+    	return instance;
+    }
+    
 	/**
 	 * Connect to WebSocket server
 	 * @param host - ip address
@@ -82,15 +92,15 @@ public class TopicClient extends Endpoint {
 	 * @throws IOException 
 	 * @throws DeploymentException 
 	 */
-	public boolean connect(String host, int port) throws DeploymentException, IOException {
+	public boolean connect(String host, String port) throws DeploymentException, IOException {
 		logger.entry(host, port);
 		uri = URI.create("ws://" + host + ":" + port + "/stream");
+		System.out.println("Connecting to: " + uri.toString());
 		synchronized (sessionLock) {
 			if (handshakeModifier == null) {
 			    client.connectToServer(this, uri);
 			} 
-			else {
-				System.out.println("Connecting to: " + uri.toString());
+			else {				
 			    ClientEndpointConfig modifier = ClientEndpointConfig.Builder.create()
 				    .configurator(handshakeModifier).build();
 			    client.connectToServer(this, modifier, uri);
@@ -158,6 +168,33 @@ public class TopicClient extends Endpoint {
     	wrapperObject.addProperty("binary", true);
     	wrapperObject.addProperty("persisited", persisted);
     	this.sendMessage(wrapperObject.toString());
+    }
+    
+    public void subscribe(String path, IEvent event) {
+    	if(!subscriptionMap.containsKey(path)) {
+    		subscriptionMap.put(path, event);
+    	}
+    	JsonObject wrapperObject = new JsonObject();
+    	JsonArray wrapperArray = new JsonArray();
+    	wrapperArray.add(new JsonPrimitive(path));
+    	wrapperObject.add("targets", wrapperArray);
+    	wrapperObject.addProperty("msg", "subscribe");
+    	this.sendMessage(wrapperObject.toString());
+    }
+    
+    public boolean unsubscribe(String path, IEvent event) {
+    	if(subscriptionMap.containsKey(path)) {
+    		subscriptionMap.remove(path);
+    		JsonObject wrapperObject = new JsonObject();
+    		JsonArray wrapperArray = new JsonArray();
+    		wrapperArray.add(new JsonPrimitive(path));
+    		wrapperObject.add("targets", wrapperArray);
+    		wrapperObject.addProperty("msg", "unsubscribe");
+    		this.sendMessage(wrapperObject.toString());
+    		return true;
+    	}
+    	
+    	return false;
     }
 	
     /**

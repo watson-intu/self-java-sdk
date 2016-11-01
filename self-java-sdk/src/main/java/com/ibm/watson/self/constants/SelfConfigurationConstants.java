@@ -19,7 +19,7 @@ public class SelfConfigurationConstants {
 	private static final String PROPERTIES_NAME = "self.properties";
 	private static final Properties SELF_PROPERTIES;
 	static {
-		InputStream propStream = SelfConfigurationConstants.class.getResourceAsStream(PROPERTIES_NAME);
+		InputStream propStream = SelfConfigurationConstants.class.getClassLoader().getResourceAsStream(PROPERTIES_NAME);
 		SELF_PROPERTIES = new Properties();
 		try {
 			SELF_PROPERTIES.load(propStream);
@@ -44,5 +44,5 @@ public class SelfConfigurationConstants {
 	public static final String TOKEN = SELF_PROPERTIES.getProperty(TOKEN_KEY);
 	public static final String ORG_ID = SELF_PROPERTIES.getProperty(ORGID_KEY);
 	
-	public static final int PORT = Integer.parseInt(SELF_PROPERTIES.getProperty(PORT_KEY));
+	public static final String PORT = SELF_PROPERTIES.getProperty(PORT_KEY);
 }
