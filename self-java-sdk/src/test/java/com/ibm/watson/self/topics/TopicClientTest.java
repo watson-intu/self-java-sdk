@@ -26,5 +26,15 @@ public class TopicClientTest {
 		}
 		
 		GestureManager.getInstance().addGesture(new DisplayGesture(), true);
+		int i = 0;
+		while(i < 30) {
+			try {
+				Thread.sleep(1000);
+				i++;
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		GestureManager.getInstance().shutdown();
 	}
 }

@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 public class DisplayGesture implements IGesture {
 
 	public String getGestureId() {
-		return "SelfDisplayGesture";
+		return "display";
 	}
 
 	public String getInstanceId() {
@@ -26,6 +26,7 @@ public class DisplayGesture implements IGesture {
 	public boolean execute(JsonObject params) {
 		String type = params.get("display").getAsString();
 		String data = params.get("data").getAsString();
+		System.out.println("Executing Display Gesture!!");
 		System.out.println("Displaying: " + type);
 		System.out.println("Data is: " + data);
 		GestureManager.getInstance().onGestureDone(this, false);

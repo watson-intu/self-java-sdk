@@ -12,8 +12,10 @@ import javax.websocket.CloseReason;
 import javax.websocket.DeploymentException;
 import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
+import javax.websocket.MessageHandler;
 import javax.websocket.OnClose;
-import javax.websocket.OnMessage;
+import javax.websocket.SendHandler;
+import javax.websocket.SendResult;
 import javax.websocket.Session;
 
 import org.apache.logging.log4j.LogManager;
@@ -22,9 +24,10 @@ import org.glassfish.tyrus.client.ClientManager;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
-public class TopicClient extends Endpoint {
+public class TopicClient extends Endpoint implements MessageHandler.Whole<String>, SendHandler {
 
 	/*          Logging                 */
 
@@ -37,6 +40,8 @@ public class TopicClient extends Endpoint {
     private ClientManager client;
     private HashMap<String, IEvent> subscriptionMap = new HashMap<String, IEvent>();
     private static TopicClient instance = null;
+    private String selfId;
+    private String token;
     
     /**
      * Modifier for HTTP handshake request.
@@ -121,18 +126,10 @@ public class TopicClient extends Endpoint {
         System.out.println("closing websocket");
     }
 
-    /**
-     * Callback hook for Message Events. This method will be invoked when a client send a message.
-     * @param message The text message
-     */
-    @OnMessage
-    public void onMessage(String message) {
-    	System.out.println(message);
-    }
-
 	@Override
 	public void onOpen(Session session, EndpointConfig arg1) {
-		this.session = session;
+		TopicClient.this.session = session;
+		session.addMessageHandler(this);
 		System.out.println("opening websocket!");	
 	}
 	
@@ -140,26 +137,50 @@ public class TopicClient extends Endpoint {
      * Send a message.
      * @param message
      */
-    public void sendMessage(String message) {
+    public void sendMessage(JsonObject message) {
 		synchronized (sessionLock) {
 		    if (session == null) {
 		    	return;
 		    }
-		    System.out.println("Sending message: " + message);
-		    session.getAsyncRemote().sendText(message);
+		    message.addProperty("origin", this.selfId + "/.");
+		    session.getAsyncRemote().sendText(message.toString());
 		}
     }
     
-    public void publish(String path, JsonObject data, boolean persisted) {
+	public void onResult(SendResult result) {		
+		if (!result.isOK()) {
+			System.out.println("Received error on Result");
+		}
+	}
+
+	public void onMessage(String message) {
+		synchronized (sessionLock) {
+			if(session == null) {
+				return;
+			}
+			JsonParser parser = new JsonParser();
+			JsonObject wrapperObject = parser.parse(message).getAsJsonObject();
+			if(!wrapperObject.get("binary").getAsBoolean()) {
+				if(subscriptionMap.containsKey(wrapperObject.get("topic").getAsString())) {
+					subscriptionMap.get(wrapperObject.get("topic").getAsString())
+						.onEvent(wrapperObject.get("data").getAsString());
+				}
+			}
+		}
+		
+		
+	}
+    
+    public void publish(String path, String data, boolean persisted) {
     	JsonObject wrapperObject = new JsonObject();
     	JsonArray pathArray = new JsonArray();
     	pathArray.add(new JsonPrimitive(path));
     	wrapperObject.add("targets", pathArray);
     	wrapperObject.addProperty("msg", "publish_at");
-    	wrapperObject.add("data", data);
+    	wrapperObject.addProperty("data", data);
     	wrapperObject.addProperty("binary", false);
     	wrapperObject.addProperty("persisted", persisted);
-    	this.sendMessage(wrapperObject.toString());
+    	this.sendMessage(wrapperObject);
     }
     
     public void publish(String path, byte[] data, boolean persisted) {
@@ -170,7 +191,7 @@ public class TopicClient extends Endpoint {
     	wrapperObject.addProperty("data", data.toString());
     	wrapperObject.addProperty("binary", true);
     	wrapperObject.addProperty("persisited", persisted);
-    	this.sendMessage(wrapperObject.toString());
+    	this.sendMessage(wrapperObject);
     }
     
     public void subscribe(String path, IEvent event) {
@@ -182,7 +203,7 @@ public class TopicClient extends Endpoint {
     	wrapperArray.add(new JsonPrimitive(path));
     	wrapperObject.add("targets", wrapperArray);
     	wrapperObject.addProperty("msg", "subscribe");
-    	this.sendMessage(wrapperObject.toString());
+    	this.sendMessage(wrapperObject);
     }
     
     public boolean unsubscribe(String path, IEvent event) {
@@ -193,7 +214,7 @@ public class TopicClient extends Endpoint {
     		wrapperArray.add(new JsonPrimitive(path));
     		wrapperObject.add("targets", wrapperArray);
     		wrapperObject.addProperty("msg", "unsubscribe");
-    		this.sendMessage(wrapperObject.toString());
+    		this.sendMessage(wrapperObject);
     		return true;
     	}
     	
@@ -218,5 +239,7 @@ public class TopicClient extends Endpoint {
 		if (handshakeModifier != null || isConnected())
 		    return;
 		handshakeModifier = new HandshakeModifier(selfId, token);
+		this.selfId = selfId;
+		this.token = token;
     }
 }
