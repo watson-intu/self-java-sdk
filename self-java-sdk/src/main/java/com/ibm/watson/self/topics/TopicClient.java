@@ -1,7 +1,9 @@
 package com.ibm.watson.self.topics;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -147,6 +149,27 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 		}
     }
     
+    private void sendMessage(JsonObject wrapperObject, byte[] data) {
+		synchronized (sessionLock) {
+			if (session == null) {
+				return;
+			}
+			wrapperObject.addProperty("data", data.length);
+			
+			try {
+				byte[] header = wrapperObject.toString().getBytes("UTF-8");
+				byte[] frame = new byte[header.length + data.length + 1];
+				System.arraycopy(header, 0, frame, 0, header.length);
+				System.arraycopy(data, 0, frame, header.length + 1, data.length);
+				session.getAsyncRemote().sendBinary(ByteBuffer.wrap(frame));
+			} catch (UnsupportedEncodingException e) {
+				System.out.println("Failed to send binary data over socket!");
+			}
+			
+		}
+	}
+    
+    
 	public void onResult(SendResult result) {		
 		if (!result.isOK()) {
 			System.out.println("Received error on Result");
@@ -177,7 +200,6 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	pathArray.add(new JsonPrimitive(path));
     	wrapperObject.add("targets", pathArray);
     	wrapperObject.addProperty("msg", "publish_at");
-    	wrapperObject.addProperty("data", data);
     	wrapperObject.addProperty("binary", false);
     	wrapperObject.addProperty("persisted", persisted);
     	this.sendMessage(wrapperObject);
@@ -188,13 +210,12 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	JsonArray pathArray = new JsonArray();
     	pathArray.add(new JsonPrimitive(path));
     	wrapperObject.add("targets", pathArray);
-    	wrapperObject.addProperty("data", data.toString());
     	wrapperObject.addProperty("binary", true);
     	wrapperObject.addProperty("persisited", persisted);
-    	this.sendMessage(wrapperObject);
+    	this.sendMessage(wrapperObject, data);
     }
-    
-    public void subscribe(String path, IEvent event) {
+
+	public void subscribe(String path, IEvent event) {
     	if(!subscriptionMap.containsKey(path)) {
     		subscriptionMap.put(path, event);
     	}
