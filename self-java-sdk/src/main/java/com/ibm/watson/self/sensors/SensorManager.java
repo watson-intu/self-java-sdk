@@ -3,6 +3,7 @@ package com.ibm.watson.self.sensors;
 import java.util.HashMap;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.ibm.watson.self.topics.IEvent;
 import com.ibm.watson.self.topics.TopicClient;
 
@@ -87,6 +88,41 @@ public class SensorManager implements IEvent {
 
 	public void onEvent(String event) {
 		System.out.println("Received Event on SensorManager: " + event);
+		JsonParser parser = new JsonParser();
+		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
+		String eventName = wrapperObject.get("event").getAsString();
+		String sensorId = wrapperObject.get("sensorId").getAsString();
+		ISensor sensor = sensorMap.get(sensorId);
+		if(sensor == null) {
+			System.out.println("Failed to find sensor: " + sensor.getSensorId());
+			return;
+		}
+		boolean error = false;
+		if(eventName.equals("start_sensor")) {
+			if(!sensorMap.get(sensorId).onStart()) {
+				System.out.println("Failed to start sensor!");
+				error = true;
+			}
+		}
+		else if(eventName.equals("stop_sensor")) {
+			if(!sensorMap.get(sensorId).onStop()) {
+				System.out.println("Failed to stop sensor!");
+				error = true;
+			}
+		}
+		else if(eventName.equals("pause_sensor")) {
+			sensorMap.get(sensorId).onPause();
+		}
+		else if(eventName.equals("resume_sensor")) {
+			sensorMap.get(sensorId).onResume();
+		}
+		
+		if(error) {
+			JsonObject failedObject = new JsonObject();
+			failedObject.addProperty("failed_event", eventName);
+			failedObject.addProperty("event", "error");
+			TopicClient.getInstance().publish("sensor-manager", failedObject.toString(), false);
+		}
 		
 	}
 

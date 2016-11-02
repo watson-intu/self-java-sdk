@@ -7,6 +7,7 @@ import javax.websocket.DeploymentException;
 import com.ibm.watson.self.constants.SelfConfigurationConstants;
 import com.ibm.watson.self.gestures.DisplayGesture;
 import com.ibm.watson.self.gestures.GestureManager;
+import com.ibm.watson.self.gestures.SpeechGesture;
 import com.ibm.watson.self.sensors.MicrophoneSensor;
 import com.ibm.watson.self.sensors.SensorManager;
 
@@ -27,11 +28,11 @@ public class TopicClientTest {
 			e.printStackTrace();
 		}
 		DisplayGesture gesture = new DisplayGesture();
+		SpeechGesture speech = new SpeechGesture();
 		GestureManager.getInstance().addGesture(gesture, true);
+		GestureManager.getInstance().addGesture(speech, true);
 		MicrophoneSensor sensor = new MicrophoneSensor();
 		SensorManager.getInstance().addSensor(sensor, true);
-		if(sensor.onStart())
-			System.out.println("Starting Microphone!");
 		int i = 0;
 		while(i < 60) {
 			try {

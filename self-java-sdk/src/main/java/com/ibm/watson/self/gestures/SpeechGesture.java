@@ -27,6 +27,7 @@ public class SpeechGesture implements IGesture {
 		String text  = params.get("text").getAsString();
 		String gender = params.get("gender").getAsString();
 		String language = params.get("language").getAsString();
+		System.out.println("SAY: " + text);
 		// TODO: Send text to android speak method
 		// mTTS.speak(text):
 		return true;

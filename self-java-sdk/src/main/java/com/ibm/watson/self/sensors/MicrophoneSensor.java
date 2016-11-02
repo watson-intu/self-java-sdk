@@ -44,6 +44,7 @@ public class MicrophoneSensor implements ISensor {
 		if(isMicrophoneOpen) {
 			Thread thread = new Thread(new CaptureAudio());
 			thread.start();
+			System.out.println("Starting Microphone!");
 			return true;
 		}
 		return false;
@@ -73,7 +74,7 @@ public class MicrophoneSensor implements ISensor {
     {
     	try
     	{
-	        AudioFormat audioFormat = new AudioFormat(16000, 16, 1, true, true);  
+	        AudioFormat audioFormat = new AudioFormat(16000, 16, 1, true, false);  
 	        DataLine.Info dataLineInfo = new DataLine.Info(TargetDataLine.class, audioFormat); 
 	        
 	        targetDataLine = (TargetDataLine) AudioSystem.getLine(dataLineInfo);  
@@ -92,10 +93,19 @@ public class MicrophoneSensor implements ISensor {
     	
 		public void run() {
 			while(isStarted) {
-				byte[] buffer = new byte[targetDataLine.getBufferSize() / 5];       
-				int count = targetDataLine.read(buffer, 0, buffer.length);
-				if(count > 0) {
-					sendData(buffer);
+				if(!isPaused) {
+					byte[] buffer = new byte[targetDataLine.getBufferSize() / 5];       
+					int count = targetDataLine.read(buffer, 0, buffer.length);
+					if(count > 0) {
+						sendData(buffer);
+					}
+				}
+				else {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 			}			
 		}  	
