@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.websocket.DeploymentException;
 
 import com.ibm.watson.self.constants.SelfConfigurationConstants;
+import com.ibm.watson.self.gestures.AnimateGesture;
 import com.ibm.watson.self.gestures.DisplayGesture;
 import com.ibm.watson.self.gestures.GestureManager;
 import com.ibm.watson.self.gestures.SpeechGesture;
@@ -29,8 +30,10 @@ public class TopicClientTest {
 		}
 		DisplayGesture gesture = new DisplayGesture();
 		SpeechGesture speech = new SpeechGesture();
+		AnimateGesture animate = new AnimateGesture();
 		GestureManager.getInstance().addGesture(gesture, true);
 		GestureManager.getInstance().addGesture(speech, true);
+		GestureManager.getInstance().addGesture(animate, true);
 		MicrophoneSensor sensor = new MicrophoneSensor();
 		SensorManager.getInstance().addSensor(sensor, true);
 		int i = 0;
@@ -44,6 +47,8 @@ public class TopicClientTest {
 		}
 		// Clean up
 		GestureManager.getInstance().removeGesture(gesture);
+		GestureManager.getInstance().removeGesture(speech);
+		GestureManager.getInstance().removeGesture(animate);
 		GestureManager.getInstance().shutdown();
 		
 		sensor.onStop();

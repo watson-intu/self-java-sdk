@@ -190,9 +190,6 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 						.onEvent(wrapperObject.get("data").getAsString());
 				}
 			}
-			else {
-				System.out.println("Received Binary Data!!!!");
-			}
 		}
 	}
     

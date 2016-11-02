@@ -87,14 +87,13 @@ public class SensorManager implements IEvent {
 	}
 
 	public void onEvent(String event) {
-		System.out.println("Received Event on SensorManager: " + event);
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		String eventName = wrapperObject.get("event").getAsString();
 		String sensorId = wrapperObject.get("sensorId").getAsString();
 		ISensor sensor = sensorMap.get(sensorId);
 		if(sensor == null) {
-			System.out.println("Failed to find sensor: " + sensor.getSensorId());
+			System.out.println("Failed to find sensor: " + sensorId);
 			return;
 		}
 		boolean error = false;

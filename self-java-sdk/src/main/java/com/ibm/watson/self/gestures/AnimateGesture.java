@@ -4,17 +4,25 @@ import java.util.UUID;
 
 import com.google.gson.JsonObject;
 
-public class SpeechGesture implements IGesture {
+public class AnimateGesture implements IGesture {
 
 	private String instanceId;
+	private String gestureId;
 	
-	public SpeechGesture() {
+	public AnimateGesture() {
 		UUID uuid = UUID.randomUUID();
         instanceId = uuid.toString();
+        gestureId = "show_laugh";
+	}
+	
+	public AnimateGesture(String gestureId) {
+		UUID uuid = UUID.randomUUID();
+        instanceId = uuid.toString();
+        this.gestureId = gestureId;
 	}
 	
 	public String getGestureId() {
-		return "tts";
+		return gestureId;
 	}
 
 	public String getInstanceId() {
@@ -30,17 +38,12 @@ public class SpeechGesture implements IGesture {
 	}
 
 	public boolean execute(JsonObject params) {
-		String text  = params.get("text").getAsString();
-		String gender = params.get("gender").getAsString();
-		String language = params.get("language").getAsString();
-		System.out.println("SAY: " + text);
-		// TODO: Send text to android speak method
-		// mTTS.speak(text):
+		System.out.println("LAUGHING NOW!");
 		GestureManager.getInstance().onGestureDone(this, false);
 		return true;
 	}
 
-	public boolean abort() {
+	public boolean abort() {	
 		return true;
 	}
 
