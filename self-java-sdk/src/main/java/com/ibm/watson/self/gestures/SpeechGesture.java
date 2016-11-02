@@ -30,6 +30,7 @@ public class SpeechGesture implements IGesture {
 		System.out.println("SAY: " + text);
 		// TODO: Send text to android speak method
 		// mTTS.speak(text):
+		GestureManager.getInstance().onGestureDone(this, false);
 		return true;
 	}
 
