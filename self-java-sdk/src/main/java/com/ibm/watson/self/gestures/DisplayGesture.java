@@ -6,13 +6,19 @@ import com.google.gson.JsonObject;
 
 public class DisplayGesture implements IGesture {
 
+	private String instanceId;
+	
+	public DisplayGesture() {
+		 UUID uuid = UUID.randomUUID();
+		 instanceId = uuid.toString();
+	}
+	
 	public String getGestureId() {
 		return "display";
 	}
 
 	public String getInstanceId() {
-        UUID uuid = UUID.randomUUID();
-        return uuid.toString();
+		return instanceId;
 	}
 
 	public boolean onStart() {

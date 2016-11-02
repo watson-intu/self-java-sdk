@@ -16,6 +16,7 @@ import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
 import javax.websocket.MessageHandler;
 import javax.websocket.OnClose;
+import javax.websocket.OnMessage;
 import javax.websocket.SendHandler;
 import javax.websocket.SendResult;
 import javax.websocket.Session;
@@ -155,7 +156,7 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 				return;
 			}
 			wrapperObject.addProperty("data", data.length);
-			
+			wrapperObject.addProperty("origin", this.selfId + "/.");
 			try {
 				byte[] header = wrapperObject.toString().getBytes("UTF-8");
 				byte[] frame = new byte[header.length + data.length + 1];
@@ -189,9 +190,10 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 						.onEvent(wrapperObject.get("data").getAsString());
 				}
 			}
+			else {
+				System.out.println("Received Binary Data!!!!");
+			}
 		}
-		
-		
 	}
     
     public void publish(String path, String data, boolean persisted) {
@@ -200,6 +202,7 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	pathArray.add(new JsonPrimitive(path));
     	wrapperObject.add("targets", pathArray);
     	wrapperObject.addProperty("msg", "publish_at");
+    	wrapperObject.addProperty("data", data);
     	wrapperObject.addProperty("binary", false);
     	wrapperObject.addProperty("persisted", persisted);
     	this.sendMessage(wrapperObject);
@@ -210,8 +213,9 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	JsonArray pathArray = new JsonArray();
     	pathArray.add(new JsonPrimitive(path));
     	wrapperObject.add("targets", pathArray);
+    	wrapperObject.addProperty("msg", "publish_at");
     	wrapperObject.addProperty("binary", true);
-    	wrapperObject.addProperty("persisited", persisted);
+    	wrapperObject.addProperty("persisted", persisted);
     	this.sendMessage(wrapperObject, data);
     }
 

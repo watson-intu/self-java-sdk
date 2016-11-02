@@ -43,6 +43,7 @@ public class SensorManager implements IEvent {
 			TopicClient.getInstance().publish("sensor-manager", wrapperObject.toString(), false);
 			sensorMap.put(sensor.getSensorId(), sensor);
 			overridesMap.put(sensor.getSensorId(), override);
+			System.out.println("Adding sensor id: " + sensor.getSensorId());
 		}
 	}
 	
@@ -62,7 +63,7 @@ public class SensorManager implements IEvent {
 	 */
 	public void sendData(ISensor sensor, byte[] data) {
 		if(!isRegistered(sensor)) {
-			System.out.println("SendData() invoked on unregistered sensor!");
+			System.out.println("SendData() invoked on unregistered sensor: " + sensor.getSensorId());
 		}
 		else {
 			TopicClient.getInstance().publish("sensor-proxy-" + sensor.getSensorId(), data, false);
@@ -85,7 +86,7 @@ public class SensorManager implements IEvent {
 	}
 
 	public void onEvent(String event) {
-		// TODO Auto-generated method stub
+		System.out.println("Received Event on SensorManager: " + event);
 		
 	}
 
