@@ -14,12 +14,21 @@ public class MicrophoneSensor implements ISensor {
 	private boolean isPaused = false;
 	private boolean isMicrophoneOpen = false;
 	private String sensorId;
+	private int rate = 0;
+	private int channel = 0;
 	
 	private TargetDataLine targetDataLine;
 	
 	public MicrophoneSensor() {
 		UUID uuid = UUID.randomUUID();
 		sensorId = uuid.toString();
+	}
+	
+	public MicrophoneSensor(int rate, int channel) {
+		UUID uuid = UUID.randomUUID();
+		sensorId = uuid.toString();
+		this.rate = rate;
+		this.channel = channel;
 	}
 	
 	public String getSensorId() {		
@@ -35,19 +44,22 @@ public class MicrophoneSensor implements ISensor {
 	}
 
 	public String getBinaryType() {
-		return "audio/L16;rate=16000;channels=1";
+		if(rate == 0)
+			return "audio/L16;rate=16000;channels=1";
+		else 
+			return "audio/L16;rate=" + rate + ";channels=" + channel;
 	}
 
 	public boolean onStart() {
 		isStarted = true;
-		startListening();
-		if(isMicrophoneOpen) {
-			Thread thread = new Thread(new CaptureAudio());
-			thread.start();
-			System.out.println("Starting Microphone!");
-			return true;
-		}
-		return false;
+//		startListening();
+//		if(isMicrophoneOpen) {
+//			Thread thread = new Thread(new CaptureAudio());
+//			thread.start();
+//			System.out.println("Starting Microphone!");
+//			return true;
+//		}
+		return true;
 	}
 
 	public boolean onStop() {
