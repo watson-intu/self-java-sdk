@@ -899,10 +899,8 @@
    ],
    "m_SkillFiles" : [
       "shared/skills/default.json",
-      "shared/skills/nao-anims.json",
-      "shared/skills/nao-joints.json",
-      "shared/skills/nao-locomotion.json",
-      "shared/skills/nao-postures.json"
+      "shared/skills/sb-anims.json",
+      "shared/skills/sb-joints.json"
    ],
    "m_bUseDevVersion" : false,
    "m_fDefaultVolume" : 70,
