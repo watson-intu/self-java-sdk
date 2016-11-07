@@ -1,0 +1,113 @@
+{
+   "Type_" : "GraphSelf",
+   "m_Edges" : [
+      {
+         "D" : 4,
+         "S" : 0,
+         "m_HashId" : "b156b49938ef458c950bbbb73ce2b4c3",
+         "m_Properties" : {
+            "label" : "reportsTo"
+         },
+         "m_fTime" : 1477690778.5710001,
+         "m_fWeight" : 1
+      },
+      {
+         "D" : 3,
+         "S" : 0,
+         "m_HashId" : "b156b49938ef458c950bbbb73ce2b4c3",
+         "m_Properties" : {
+            "label" : "reportsTo"
+         },
+         "m_fTime" : 1477690778.5710001,
+         "m_fWeight" : 1
+      },
+      {
+         "D" : 1,
+         "S" : 0,
+         "m_HashId" : "283598266ab3ae435cb39671e674fe46",
+         "m_Properties" : {
+            "label" : "team"
+         },
+         "m_fTime" : 1477690778.5710001,
+         "m_fWeight" : 1
+      },
+      {
+         "D" : 0,
+         "S" : 1,
+         "m_HashId" : "283598266ab3ae435cb39671e674fe46",
+         "m_Properties" : {
+            "label" : "team"
+         },
+         "m_fTime" : 1477690778.5710001,
+         "m_fWeight" : 1
+      },
+      {
+         "D" : 4,
+         "S" : 1,
+         "m_HashId" : "b156b49938ef458c950bbbb73ce2b4c3",
+         "m_Properties" : {
+            "label" : "reportsTo"
+         },
+         "m_fTime" : 1477690778.5710001,
+         "m_fWeight" : 1
+      },
+      {
+         "D" : 3,
+         "S" : 4,
+         "m_HashId" : "b156b49938ef458c950bbbb73ce2b4c3",
+         "m_Properties" : {
+            "label" : "reportsTo"
+         },
+         "m_fTime" : 1477690778.5710001,
+         "m_fWeight" : 1
+      },
+      {
+         "D" : 2,
+         "S" : 3,
+         "m_HashId" : "b156b49938ef458c950bbbb73ce2b4c3",
+         "m_Properties" : {
+            "label" : "reportsTo"
+         },
+         "m_fTime" : 1477690778.5710001,
+         "m_fWeight" : 1
+      }
+   ],
+   "m_GraphId" : "TestGraph",
+   "m_Verts" : [
+      {
+         "m_HashId" : "a23b687c2a99049a90e5c4cdb9f79e0f",
+         "m_Properties" : {
+            "name" : "Richard"
+         },
+         "m_fTime" : 1477690778.5699999
+      },
+      {
+         "m_HashId" : "2d694ce461e7fbeacc62975d0f62f41a",
+         "m_Properties" : {
+            "name" : "JJ"
+         },
+         "m_fTime" : 1477690778.5699999
+      },
+      {
+         "m_HashId" : "05b1a50b344d4c57b517617fe0a5c78d",
+         "m_Properties" : {
+            "name" : "Grady"
+         },
+         "m_fTime" : 1477690778.5699999
+      },
+      {
+         "m_HashId" : "5437a83355182cd3cfd2a4feace3786b",
+         "m_Properties" : {
+            "name" : "Ray"
+         },
+         "m_fTime" : 1477690778.5710001
+      },
+      {
+         "m_HashId" : "1c4ea08299ce49069586b274e61050b1",
+         "m_Properties" : {
+            "name" : "Russ"
+         },
+         "m_fTime" : 1477690778.5710001
+      }
+   ]
+}
