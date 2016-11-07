@@ -711,29 +711,7 @@
       "key": "show_laugh",
       "value": {
         "Type_": "AnimateGesture",
-        "m_GestureId": "show_laugh",
-        "m_Animations": [
-          {
-            "m_AnimId": "Sit/Emotions/Positive/Laugh_1",
-            "m_RequiredPosture": "Sit"
-          },
-          {
-            "m_AnimId": "Sit/Emotions/Positive/Laugh_2",
-            "m_RequiredPosture": "Sit"
-          },
-          {
-            "m_AnimId": "Stand/Emotions/Positive/Laugh_1",
-            "m_RequiredPosture": "Stand"
-          },
-          {
-            "m_AnimId": "Stand/Emotions/Positive/Laugh_2",
-            "m_RequiredPosture": "Stand"
-          },
-          {
-            "m_AnimId": "Stand/Emotions/Positive/Laugh_3",
-            "m_RequiredPosture": "Stand"
-          }
-        ]
+        "m_GestureId": "show_laugh"
       }
     },
     {
