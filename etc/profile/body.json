@@ -259,7 +259,7 @@
                "m_IntentOverride" : "m_IntentOverride",
                "m_ServiceId" : "ConversationV1",
                "m_WorkspaceId" : "8432262a-a3fb-4d45-851c-44180d7d75ad",
-               "m_WorkspaceKey" : "self_wex",
+               "m_WorkspaceKey" : "self_domain",
                "m_bPriority" : false
             },
             {
