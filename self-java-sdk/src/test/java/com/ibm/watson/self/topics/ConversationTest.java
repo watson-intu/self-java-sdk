@@ -6,7 +6,6 @@ import java.util.Scanner;
 import javax.websocket.DeploymentException;
 
 import com.google.gson.JsonObject;
-import com.ibm.watson.self.blackboard.BlackBoard;
 import com.ibm.watson.self.blackboard.IThing;
 import com.ibm.watson.self.constants.SelfConfigurationConstants;
 import com.ibm.watson.self.gestures.AnimateGesture;
@@ -14,7 +13,7 @@ import com.ibm.watson.self.gestures.DisplayGesture;
 import com.ibm.watson.self.gestures.GestureManager;
 import com.ibm.watson.self.gestures.SpeechGesture;
 
-public class BlackboardTest {
+public class ConversationTest {
 
 	private boolean isRunning = false;
 	private static String host = null;
@@ -26,7 +25,7 @@ public class BlackboardTest {
 			host = args[0];
 			port = args[1];
 		}
-		new BlackboardTest();
+		new ConversationTest();
 			
 	}
 	
@@ -53,7 +52,7 @@ public class BlackboardTest {
 		return true;
 	}
 	
-	public BlackboardTest() {
+	public ConversationTest() {
 		connectToIntu();
 		DisplayGesture gesture = new DisplayGesture();
 		SpeechGesture speech = new SpeechGesture();

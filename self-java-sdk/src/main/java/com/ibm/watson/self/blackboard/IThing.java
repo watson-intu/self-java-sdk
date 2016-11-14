@@ -16,6 +16,7 @@ public class IThing {
 		TE_STATE(4),
 		TE_IMPORTANCE(8);
 		
+		
 		private int id;
 		
 		ThingEventType(int id) {
@@ -43,6 +44,10 @@ public class IThing {
 	    public int getId() {
 	    	return id;
 	    }
+	    
+	    public void setId(int id) {
+	    	this.id = id;
+	    }
     }
 	
     // Required
@@ -59,6 +64,7 @@ public class IThing {
 	private JsonObject data;
 	private String parentId;
 	private JsonObject body = null;
+	private String origin;
 	
 	
 	public IThing() {
@@ -95,6 +101,32 @@ public class IThing {
 		}
 		
 		return wrapperObject.toString();
+	}
+	
+	public void deserialize(JsonObject wrapperObject) {
+		this.body = wrapperObject;
+		this.type = wrapperObject.get("Type_").getAsString();
+		ThingCategory thingCategory = ThingCategory.TT_INVALID;
+		thingCategory.setId(wrapperObject.get("m_eCategory").getAsInt());
+		this.category = thingCategory;
+		this.guid = wrapperObject.get("m_GUID").getAsString();
+		this.state = wrapperObject.get("m_State").getAsString();
+		
+		if(wrapperObject.has("m_fImportance")) {
+			this.importance = wrapperObject.get("m_fImportance").getAsDouble();
+		}
+		if(wrapperObject.has("m_CreateTime")) {
+			this.createTime = (long) wrapperObject.get("m_CreateTime").getAsDouble();
+		}
+		if(wrapperObject.has("m_fLifeSpan")) {
+			this.lifeSpan = wrapperObject.get("m_fLifeSpan").getAsDouble();
+		}
+		if(wrapperObject.has("m_DataType")) {
+			this.dataType = wrapperObject.get("m_DataType").getAsString();
+		}
+		if(wrapperObject.has("m_Data")) {
+			this.data = wrapperObject.get("m_Data").getAsJsonObject();
+		}
 	}
 
 	public String getType() {
@@ -183,5 +215,13 @@ public class IThing {
 	
 	public void setBody(JsonObject body) {
 		this.body = body;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
 	}
 }
