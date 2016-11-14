@@ -58,7 +58,7 @@ public class BlackBoardTest implements IBlackBoard {
 			logger.error("Cannot connect to Intu!! Shutting down...");
 			return;
 		}
-		BlackBoard.getInstance().subscribeToType("EmotionalState", ThingEventType.TE_ADDED, this, "");
+		BlackBoard.getInstance().subscribeToType("Text", ThingEventType.TE_ADDED, this, "");
 		
 		int i = 0;
 		while(i < 60) {
@@ -69,12 +69,13 @@ public class BlackBoardTest implements IBlackBoard {
 				e.printStackTrace();
 			}
 		}
-		BlackBoard.getInstance().unsubscribeFromType("EmotionalState", this, "");
+		BlackBoard.getInstance().unsubscribeFromType("Text", this, "");
 		logger.info("Finished running blackboard test!");
 		
 	}
 
 	public void onThingEvent(ThingEvent thingEvent) {
 		System.out.println("Received new ThingEvent: " + thingEvent.getThing().getType());
+		System.out.println("Text input was: " + thingEvent.getThing().getBody().get("m_Text").getAsString());
 	}
 }
