@@ -14,7 +14,7 @@ public class SelfConfigurationConstants {
 
 	/*          Logging                 */
 
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LogManager.getLogger(SelfConfigurationConstants.class.getName());
 	
 	private static final String PROPERTIES_NAME = "self.properties";
 	private static final Properties SELF_PROPERTIES;

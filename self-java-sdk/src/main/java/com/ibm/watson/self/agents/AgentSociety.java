@@ -2,6 +2,9 @@ package com.ibm.watson.self.agents;
 
 import java.util.HashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ibm.watson.self.topics.IEvent;
@@ -14,6 +17,8 @@ public class AgentSociety implements IEvent {
 	
 	private HashMap<String, IAgent> agentMap = new HashMap<String, IAgent>();
 	private HashMap<String, Boolean> overrideMap = new HashMap<String, Boolean>();
+	
+	private static Logger logger = LogManager.getLogger(AgentSociety.class.getName());
 	
 	public AgentSociety() {
 		TopicClient.getInstance().subscribe("agent-society", this);
@@ -33,6 +38,7 @@ public class AgentSociety implements IEvent {
 	}
 	
 	public void addAgent(IAgent agent, boolean override) {
+		logger.entry();
 		if(!agentMap.containsKey(agent.getAgentId())) {
 			JsonObject wrapperObject = new JsonObject();
 			wrapperObject.addProperty("event", "add_agent_proxy");
@@ -43,9 +49,11 @@ public class AgentSociety implements IEvent {
 			agentMap.put(agent.getAgentId(), agent);
 			overrideMap.put(agent.getAgentId(), override);
 		}
+		logger.exit();
 	}
 	
 	public void removeAgent(IAgent agent) {
+		logger.entry();
 		if(agentMap.containsKey(agent.getAgentId())) {
 			agentMap.remove(agent.getAgentId());
 			overrideMap.remove(agent.getAgentId());
@@ -54,15 +62,17 @@ public class AgentSociety implements IEvent {
 			wrapperObject.addProperty("agentId", agent.getAgentName());
 			TopicClient.getInstance().publish("agent-society", wrapperObject.toString(), false);
 		}
+		logger.exit();
 	}
 
 	public void onEvent(String event) {
+		logger.entry();
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		String agentId = wrapperObject.get("agentId").getAsString();
 		IAgent agent = agentMap.get(agentId);
 		if(agent == null) {
-			System.out.println("Failed to find agent!");
+			logger.info("Failed to find agent!");
 			return;
 		}
 		
@@ -70,13 +80,13 @@ public class AgentSociety implements IEvent {
 		String eventName = wrapperObject.get("event").getAsString();
 		if(eventName.equals("start_agent")) {
 			if(!agent.onStart()) {
-				System.out.println("Failed to start agent: " + agent.getAgentName());
+				logger.info("Failed to start agent: " + agent.getAgentName());
 				failed = true;
 			}
 		}
 		else if(eventName.equals("stop_agent")) {
 			if(!agent.onStop()) {
-				System.out.println("Failed to stop agent: " + agent.getAgentName());
+				logger.info("Failed to stop agent: " + agent.getAgentName());
 				failed = true;
 			}
 		}
@@ -87,6 +97,7 @@ public class AgentSociety implements IEvent {
 			failedObject.addProperty("event", "error");
 			TopicClient.getInstance().publish("agent-society", wrapperObject.toString(), false);
 		}
+		logger.exit();
 	}
 
 	public boolean isActive() {

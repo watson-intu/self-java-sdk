@@ -2,8 +2,12 @@ package com.ibm.watson.self.sensors;
 
 import java.util.HashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.ibm.watson.self.agents.AgentSociety;
 import com.ibm.watson.self.topics.IEvent;
 import com.ibm.watson.self.topics.TopicClient;
 
@@ -13,6 +17,8 @@ public class SensorManager implements IEvent {
 	private boolean started = false;
 	private HashMap<String, ISensor> sensorMap = new HashMap<String, ISensor>();
 	private HashMap<String, Boolean> overridesMap = new HashMap<String, Boolean>();
+	
+	private static Logger logger = LogManager.getLogger(SensorManager.class.getName());
 	
 	public SensorManager() {
 		TopicClient.getInstance().subscribe("sensor-manager", this);
@@ -33,6 +39,7 @@ public class SensorManager implements IEvent {
 	 * @param override - if it should stop remote self sensor or not
 	 */
 	public void addSensor(ISensor sensor, boolean override) {
+		logger.entry();
 		if(!sensorMap.containsKey(sensor.getSensorId())) {
 			JsonObject wrapperObject = new JsonObject();
 			wrapperObject.addProperty("event", "add_sensor_proxy");
@@ -44,8 +51,9 @@ public class SensorManager implements IEvent {
 			TopicClient.getInstance().publish("sensor-manager", wrapperObject.toString(), false);
 			sensorMap.put(sensor.getSensorId(), sensor);
 			overridesMap.put(sensor.getSensorId(), override);
-			System.out.println("Adding sensor id: " + sensor.getSensorId());
+			logger.info("Adding sensor id: " + sensor.getSensorId());
 		}
+		logger.exit();
 	}
 	
 	/**
@@ -63,12 +71,14 @@ public class SensorManager implements IEvent {
 	 * @param data - raw data to be sent
 	 */
 	public void sendData(ISensor sensor, byte[] data) {
+		logger.entry();
 		if(!isRegistered(sensor)) {
-			System.out.println("SendData() invoked on unregistered sensor: " + sensor.getSensorId());
+			logger.error("SendData() invoked on unregistered sensor: " + sensor.getSensorId());
 		}
 		else {
 			TopicClient.getInstance().publish("sensor-proxy-" + sensor.getSensorId(), data, false);
 		}
+		logger.exit();
 	}
 	
 	/**
@@ -76,6 +86,7 @@ public class SensorManager implements IEvent {
 	 * @param sensor - sensor to remove
 	 */
 	public void removeSensor(ISensor sensor) {
+		logger.entry();
 		if(sensorMap.containsKey(sensor.getSensorId())) {
 			sensorMap.remove(sensor.getSensorId());
 			overridesMap.remove(sensor.getSensorId());
@@ -84,28 +95,30 @@ public class SensorManager implements IEvent {
 			wrapperObject.addProperty("sensorId", sensor.getSensorId());
 			TopicClient.getInstance().publish("sensor-manager", wrapperObject.toString(), false);
 		}
+		logger.exit();
 	}
 
 	public void onEvent(String event) {
+		logger.entry();
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		String eventName = wrapperObject.get("event").getAsString();
 		String sensorId = wrapperObject.get("sensorId").getAsString();
 		ISensor sensor = sensorMap.get(sensorId);
 		if(sensor == null) {
-			System.out.println("Failed to find sensor: " + sensorId);
+			logger.error("Failed to find sensor: " + sensorId);
 			return;
 		}
 		boolean error = false;
 		if(eventName.equals("start_sensor")) {
 			if(!sensorMap.get(sensorId).onStart()) {
-				System.out.println("Failed to start sensor!");
+				logger.error("Failed to start sensor!");
 				error = true;
 			}
 		}
 		else if(eventName.equals("stop_sensor")) {
 			if(!sensorMap.get(sensorId).onStop()) {
-				System.out.println("Failed to stop sensor!");
+				logger.error("Failed to stop sensor!");
 				error = true;
 			}
 		}
@@ -122,7 +135,7 @@ public class SensorManager implements IEvent {
 			failedObject.addProperty("event", "error");
 			TopicClient.getInstance().publish("sensor-manager", failedObject.toString(), false);
 		}
-		
+		logger.exit();
 	}
 
 	public boolean isActive() {

@@ -1,11 +1,14 @@
 package com.ibm.watson.self.agents;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.ibm.watson.self.blackboard.IBlackBoard;
-import com.ibm.watson.self.blackboard.IThing;
 import com.ibm.watson.self.blackboard.ThingEvent;
 
 public class TouchAgent implements IAgent, IBlackBoard {
 
+	private static Logger logger = LogManager.getLogger(TouchAgent.class.getName());
 
 	public String getAgentName() {
 		// TODO Auto-generated method stub

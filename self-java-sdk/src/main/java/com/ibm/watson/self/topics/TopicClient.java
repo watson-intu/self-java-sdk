@@ -34,7 +34,7 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 
 	/*          Logging                 */
 
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LogManager.getLogger(TopicClient.class.getName());
     
     /*			Variables				*/
     private Object sessionLock;
@@ -101,9 +101,9 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 	 * @throws DeploymentException 
 	 */
 	public boolean connect(String host, String port) throws DeploymentException, IOException {
-		logger.entry(host, port);
+		logger.entry();
 		uri = URI.create("ws://" + host + ":" + port + "/stream");
-		System.out.println("Connecting to: " + uri.toString());
+		logger.info("Connecting to: " + uri.toString());
 		synchronized (sessionLock) {
 			if (handshakeModifier == null) {
 			    client.connectToServer(this, uri);
@@ -125,15 +125,19 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
      */
     @OnClose
     public void onClose(Session userSession, CloseReason reason) {
+    	logger.entry();
     	this.session = null;
-        System.out.println("closing websocket");
+        logger.info("closing websocket");
+        logger.exit();
     }
 
 	@Override
 	public void onOpen(Session session, EndpointConfig arg1) {
+		logger.entry();
 		TopicClient.this.session = session;
 		session.addMessageHandler(this);
-		System.out.println("opening websocket!");	
+		logger.info("opening websocket!");	
+		logger.exit();
 	}
 	
     /**
@@ -141,6 +145,7 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
      * @param message
      */
     public void sendMessage(JsonObject message) {
+    	logger.entry();
 		synchronized (sessionLock) {
 		    if (session == null) {
 		    	return;
@@ -148,9 +153,11 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 		    message.addProperty("origin", this.selfId + "/.");
 		    session.getAsyncRemote().sendText(message.toString());
 		}
+		logger.exit();
     }
     
     private void sendMessage(JsonObject wrapperObject, byte[] data) {
+    	logger.entry();
 		synchronized (sessionLock) {
 			if (session == null) {
 				return;
@@ -164,20 +171,24 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 				System.arraycopy(data, 0, frame, header.length + 1, data.length);
 				session.getAsyncRemote().sendBinary(ByteBuffer.wrap(frame));
 			} catch (UnsupportedEncodingException e) {
-				System.out.println("Failed to send binary data over socket!");
+				logger.error("Failed to send binary data over socket!");
 			}
 			
 		}
+		logger.exit();
 	}
     
     
-	public void onResult(SendResult result) {		
+	public void onResult(SendResult result) {	
+		logger.entry();
 		if (!result.isOK()) {
-			System.out.println("Received error on Result");
+			logger.error("Received error on Result");
 		}
+		logger.exit();
 	}
 
 	public void onMessage(String message) {
+		logger.entry();
 		synchronized (sessionLock) {
 			if(session == null) {
 				return;
@@ -191,9 +202,11 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 				}
 			}
 		}
+		logger.exit();
 	}
     
     public void publish(String path, String data, boolean persisted) {
+    	logger.entry();
     	JsonObject wrapperObject = new JsonObject();
     	JsonArray pathArray = new JsonArray();
     	pathArray.add(new JsonPrimitive(path));
@@ -203,9 +216,11 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	wrapperObject.addProperty("binary", false);
     	wrapperObject.addProperty("persisted", persisted);
     	this.sendMessage(wrapperObject);
+    	logger.exit();
     }
     
     public void publish(String path, byte[] data, boolean persisted) {
+    	logger.entry();
     	JsonObject wrapperObject = new JsonObject();
     	JsonArray pathArray = new JsonArray();
     	pathArray.add(new JsonPrimitive(path));
@@ -214,9 +229,11 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	wrapperObject.addProperty("binary", true);
     	wrapperObject.addProperty("persisted", persisted);
     	this.sendMessage(wrapperObject, data);
+    	logger.exit();
     }
 
 	public void subscribe(String path, IEvent event) {
+		logger.entry();
     	if(!subscriptionMap.containsKey(path)) {
     		subscriptionMap.put(path, event);
     	}
@@ -226,9 +243,11 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	wrapperObject.add("targets", wrapperArray);
     	wrapperObject.addProperty("msg", "subscribe");
     	this.sendMessage(wrapperObject);
+    	logger.exit();
     }
     
     public boolean unsubscribe(String path, IEvent event) {
+    	logger.entry();
     	if(subscriptionMap.containsKey(path)) {
     		subscriptionMap.remove(path);
     		JsonObject wrapperObject = new JsonObject();
@@ -237,10 +256,10 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     		wrapperObject.add("targets", wrapperArray);
     		wrapperObject.addProperty("msg", "unsubscribe");
     		this.sendMessage(wrapperObject);
-    		return true;
+    		return logger.exit(true);
     	}
     	
-    	return false;
+    	return logger.exit(false);
     }
 	
     /**
@@ -258,10 +277,12 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
      * @param authorization
      */
     public void setHeaders(String selfId, String token) {
+    	logger.entry();
 		if (handshakeModifier != null || isConnected())
 		    return;
 		handshakeModifier = new HandshakeModifier(selfId, token);
 		this.selfId = selfId;
 		this.token = token;
+		logger.exit();
     }
 }

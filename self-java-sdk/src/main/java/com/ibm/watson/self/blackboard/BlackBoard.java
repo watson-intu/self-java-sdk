@@ -21,7 +21,7 @@ public class BlackBoard implements IEvent {
 	private HashMap<String, IThing> thingMap = new HashMap<String, IThing>();
 	private boolean started = false;
 	
-	private static Logger logger = LogManager.getLogger();
+	private static Logger logger = LogManager.getLogger(BlackBoard.class.getName());
 	
 	public BlackBoard() {
 		started = true;
@@ -36,6 +36,7 @@ public class BlackBoard implements IEvent {
 	}
 	
 	public void subscribeToType(String type, IThing.ThingEventType thingEvent, IBlackBoard blackboard, String path) {
+		logger.entry();
 		if(!subscriptionMap.containsKey(path)) {
 			TopicClient.getInstance().subscribe(path + "blackboard", this);
 			HashMap<String, List<Subscriber>> tempMap = new HashMap<String, List<Subscriber>>();
@@ -54,9 +55,11 @@ public class BlackBoard implements IEvent {
 		}
 		types.get(type).add(new Subscriber(blackboard, thingEvent, path));
 		subscriptionMap.put(path, types);
+		logger.exit();
 	}
 	
 	public void unsubscribeFromType(String type, IBlackBoard blackboard, String path) {
+		logger.entry();
 		if(subscriptionMap.containsKey(path)) {
 			HashMap<String, List<Subscriber>> types = subscriptionMap.get(path);
 			if(types.containsKey(type)) {
@@ -86,9 +89,11 @@ public class BlackBoard implements IEvent {
 				subscriptionMap.put(path, types);
 			}
 		}
+		logger.exit();
 	}
 	
 	public void addThing(IThing thing, String path) {
+		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
 		wrapperObject.addProperty("event", "add_object");
 		wrapperObject.addProperty("type", thing.getType());
@@ -97,6 +102,7 @@ public class BlackBoard implements IEvent {
 			wrapperObject.addProperty("parent", thing.getParentId());
 		
 		TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
+		logger.exit();
 	}
 	
 	public void removeThing(IThing thing, String path) {
@@ -104,11 +110,12 @@ public class BlackBoard implements IEvent {
 	}
 	
 	public void removeThing(String guid, String path) {
+		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
 		wrapperObject.addProperty("event", "remove_object");
-		wrapperObject.addProperty("thing_guid", guid);
-		
+		wrapperObject.addProperty("thing_guid", guid);		
 		TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
+		logger.exit();
 	}
 	
 	public void setState(IThing thing, String state, String path) {
@@ -117,11 +124,13 @@ public class BlackBoard implements IEvent {
 	}
 	
 	public void setState(String guid, String state, String path) {
+		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
 		wrapperObject.addProperty("event", "set_object_state");
 		wrapperObject.addProperty("thing_guid", guid);
 		wrapperObject.addProperty("state", state);
 		TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
+		logger.exit();
 	}
 	
 	public void setImportance(IThing thing, double importance, String path) {
@@ -129,14 +138,17 @@ public class BlackBoard implements IEvent {
 	}
 	
 	public void setImportance(String guid, double importance, String path) {
+		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
 		wrapperObject.addProperty("event", "set_object_importance");
 		wrapperObject.addProperty("thing_guid", guid);
 		wrapperObject.addProperty("importance", importance);
 		TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
+		logger.exit();
 	}
 
 	public void onEvent(String event) {
+		logger.entry();
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		boolean failed = false;
@@ -210,7 +222,7 @@ public class BlackBoard implements IEvent {
 				}
 			}
 		}
-		
+		logger.exit();
 	}
 
 	public boolean isActive() {
@@ -218,9 +230,11 @@ public class BlackBoard implements IEvent {
 	}
 
 	public void shutdown() {
+		logger.entry();
 		started = false;
 		for(String path : subscriptionMap.keySet()) {
 			TopicClient.getInstance().unsubscribe(path + "blackboard", this);
 		}
+		logger.exit();
 	}
 }
