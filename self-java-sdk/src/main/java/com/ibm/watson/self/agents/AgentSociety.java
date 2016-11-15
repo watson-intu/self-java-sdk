@@ -59,7 +59,7 @@ public class AgentSociety implements IEvent {
 			overrideMap.remove(agent.getAgentId());
 			JsonObject wrapperObject = new JsonObject();
 			wrapperObject.addProperty("event", "remove_agent_proxy");
-			wrapperObject.addProperty("agentId", agent.getAgentName());
+			wrapperObject.addProperty("agentId", agent.getAgentId());
 			TopicClient.getInstance().publish("agent-society", wrapperObject.toString(), false);
 		}
 		logger.exit();
@@ -67,6 +67,7 @@ public class AgentSociety implements IEvent {
 
 	public void onEvent(String event) {
 		logger.entry();
+		logger.info(event);
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		String agentId = wrapperObject.get("agentId").getAsString();

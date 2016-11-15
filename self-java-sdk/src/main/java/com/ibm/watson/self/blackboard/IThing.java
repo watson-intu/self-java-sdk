@@ -79,7 +79,7 @@ public class IThing {
         setLifeSpan(3600.0);
     }
 	
-	public String serialize() {
+	public JsonObject serialize() {
 		JsonObject wrapperObject = new JsonObject();
 		if(body != null) {
 			for(Entry<String, JsonElement> entry : body.entrySet()) {
@@ -95,12 +95,12 @@ public class IThing {
 		wrapperObject.addProperty("m_State", state);
 		wrapperObject.addProperty("m_fLifeSpan", lifeSpan);
 		
-		if(!dataType.isEmpty()) {
+		if(dataType != null && !dataType.isEmpty()) {
 			wrapperObject.addProperty("m_DataType", dataType);
 			wrapperObject.add("m_Data", data);
 		}
 		
-		return wrapperObject.toString();
+		return wrapperObject;
 	}
 	
 	public void deserialize(JsonObject wrapperObject) {

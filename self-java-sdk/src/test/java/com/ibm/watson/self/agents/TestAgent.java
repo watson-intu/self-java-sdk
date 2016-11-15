@@ -1,4 +1,4 @@
-package com.ibm.watson.self.blackboard;
+package com.ibm.watson.self.agents;
 
 import java.io.IOException;
 
@@ -7,17 +7,15 @@ import javax.websocket.DeploymentException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.ibm.watson.self.blackboard.IThing.ThingEventType;
 import com.ibm.watson.self.constants.SelfConfigurationConstants;
-import com.ibm.watson.self.topics.ConversationTest;
 import com.ibm.watson.self.topics.TopicClient;
 
-public class BlackBoardTest implements IBlackBoard {
+public class TestAgent {
 
 	private static String host = null;
 	private static String port = null;
 	
-	private static Logger logger = LogManager.getLogger(BlackBoardTest.class.getName());
+	private static Logger logger = LogManager.getLogger(TestAgent.class.getName());
 	
 	public static void main(String[] args) {
 		
@@ -25,7 +23,7 @@ public class BlackBoardTest implements IBlackBoard {
 			host = args[0];
 			port = args[1];
 		}
-		new BlackBoardTest();
+		new TestAgent();
 			
 	}
 	
@@ -52,13 +50,19 @@ public class BlackBoardTest implements IBlackBoard {
 		return true;
 	}
 	
-	public BlackBoardTest() {
+	public TestAgent() {
 		boolean isConnected = connectToIntu();
 		if(!isConnected) {
 			logger.error("Cannot connect to Intu!! Shutting down...");
 			return;
 		}
-		BlackBoard.getInstance().subscribeToType("EmotionalState", ThingEventType.TE_ADDED, this, "");
+		ExampleAgent agent = new ExampleAgent();
+		if(!agent.onStart()) {
+			logger.error("Failed to start agent!");
+			return;
+		}
+			
+		AgentSociety.getInstance().addAgent(agent, false);
 		
 		int i = 0;
 		while(i < 60) {
@@ -69,13 +73,6 @@ public class BlackBoardTest implements IBlackBoard {
 				e.printStackTrace();
 			}
 		}
-		BlackBoard.getInstance().unsubscribeFromType("EmotionalState", this, "");
-		logger.info("Finished running blackboard test!");
-		
-	}
-
-	public void onThingEvent(ThingEvent thingEvent) {
-		System.out.println("Received new ThingEvent: " + thingEvent.getThing().getType());
-		System.out.println("EmotionalState input was: " + thingEvent.getThing().getData().get("m_EmotionalState").getAsDouble());
+		AgentSociety.getInstance().removeAgent(agent);
 	}
 }

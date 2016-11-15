@@ -97,8 +97,8 @@ public class BlackBoard implements IEvent {
 		JsonObject wrapperObject = new JsonObject();
 		wrapperObject.addProperty("event", "add_object");
 		wrapperObject.addProperty("type", thing.getType());
-		wrapperObject.addProperty("thing", thing.serialize());
-		if(!thing.getParentId().isEmpty())
+		wrapperObject.add("thing", thing.serialize());
+		if(thing.getParentId() != null && !thing.getParentId().isEmpty())
 			wrapperObject.addProperty("parent", thing.getParentId());
 		
 		TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
@@ -149,6 +149,7 @@ public class BlackBoard implements IEvent {
 
 	public void onEvent(String event) {
 		logger.entry();
+		logger.info(event);
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		boolean failed = false;
