@@ -149,7 +149,6 @@ public class BlackBoard implements IEvent {
 
 	public void onEvent(String event) {
 		logger.entry();
-		logger.info(event);
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		boolean failed = false;

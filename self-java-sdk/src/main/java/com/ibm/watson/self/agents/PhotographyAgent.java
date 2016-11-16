@@ -12,8 +12,10 @@ import com.ibm.watson.self.blackboard.IBlackBoard;
 import com.ibm.watson.self.blackboard.IThing;
 import com.ibm.watson.self.blackboard.ThingEvent;
 import com.ibm.watson.self.blackboard.IThing.ThingEventType;
+import com.ibm.watson.self.sensors.ILocalSensorSubscriber;
+import com.ibm.watson.self.sensors.SensorManager;
 
-public class PhotographyAgent implements IAgent, IBlackBoard {
+public class PhotographyAgent implements IAgent, IBlackBoard, ILocalSensorSubscriber {
 	
 	private static Logger logger = LogManager.getLogger(PhotographyAgent.class.getName());
 	UUID uuid = UUID.randomUUID();
@@ -37,6 +39,9 @@ public class PhotographyAgent implements IAgent, IBlackBoard {
 		else if(type.equals("ProxyIntent")) {
 			onProxyIntent(thingEvent.getThing());
 		}
+		else if(type.equals("Object")) {
+			onObject(thingEvent.getThing());
+		}
 		else {
 			logger.error("Could not identify the type of the IThing");
 		}
@@ -55,20 +60,14 @@ public class PhotographyAgent implements IAgent, IBlackBoard {
 		}
 		logger.info("Received onPhotgraphyIntent() with: " + thing.toString());
 		if(personFound) {
-			// Throw say object on blackboard
 			JsonObject wrapperObject = new JsonObject();
 			wrapperObject.addProperty("m_Name", "Photography");
 			IThing sayThing = new IThing();
 			sayThing.setType("Goal");
 			sayThing.setBody(wrapperObject);
 			BlackBoard.getInstance().addThing(sayThing, "");
-			
-			// Grab last image and display
-			
-			// Reset everything
 			personFound = false;
-			personTimer = 0;
-			
+			personTimer = 0;			
 		}
 		else {
 			JsonObject wrapperObject = new JsonObject();
@@ -87,6 +86,22 @@ public class PhotographyAgent implements IAgent, IBlackBoard {
 		person = thing;
 		personTimer = 0;
 	}
+	
+	private void onObject(IThing thing) {
+		logger.info("Received onObject() with: " + thing.toString());
+		SensorManager.getInstance().registerWithLocalSensor(this, "VideoData");
+	}
+	
+	public void getData(String data) {
+		logger.info("Received non-binary data!");
+	}
+
+	public void getBinaryData(byte[] data) {
+		// TODO: Send Binary Data from here
+		logger.info("Received binary data!");
+		SensorManager.getInstance().unregisterWithLocalSensor(this);
+		
+	}
 
 	public String getAgentName() {
 		return "PhotographyAgent";
@@ -100,6 +115,7 @@ public class PhotographyAgent implements IAgent, IBlackBoard {
 		logger.entry();
 		BlackBoard.getInstance().subscribeToType("ProxyIntent", ThingEventType.TE_ADDED, this, "");
 		BlackBoard.getInstance().subscribeToType("Person", ThingEventType.TE_ADDED, this, "");
+		BlackBoard.getInstance().subscribeToType("Object", ThingEventType.TE_ADDED, this, "");
 		isRunning = true;
 		Thread personTimer = new Thread(new PersonTimer());
 		personTimer.start();
@@ -109,6 +125,7 @@ public class PhotographyAgent implements IAgent, IBlackBoard {
 	public boolean onStop() {
 		BlackBoard.getInstance().unsubscribeFromType("ProxyIntent", this, "");
 		BlackBoard.getInstance().unsubscribeFromType("Person", this, "");
+		BlackBoard.getInstance().unsubscribeFromType("Object", this, "");
 		isRunning = false;
 		return logger.exit(true);
 	}
