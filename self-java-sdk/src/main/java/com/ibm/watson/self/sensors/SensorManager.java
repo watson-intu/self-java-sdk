@@ -17,6 +17,7 @@ public class SensorManager implements IEvent {
 	private boolean started = false;
 	private HashMap<String, ISensor> sensorMap = new HashMap<String, ISensor>();
 	private HashMap<String, Boolean> overridesMap = new HashMap<String, Boolean>();
+	private HashMap<ILocalSensorSubscriber, String> subscriberMap = new HashMap<ILocalSensorSubscriber, String>();
 	
 	private static Logger logger = LogManager.getLogger(SensorManager.class.getName());
 	
@@ -78,6 +79,13 @@ public class SensorManager implements IEvent {
 		else {
 			TopicClient.getInstance().publish("sensor-proxy-" + sensor.getSensorId(), data, false);
 		}
+		
+		for(ILocalSensorSubscriber key : subscriberMap.keySet())
+		{
+			if(sensor.getDataType().equals(subscriberMap.get(key))) {
+				key.getBinaryData(data);
+			}
+		}
 		logger.exit();
 	}
 	
@@ -96,6 +104,19 @@ public class SensorManager implements IEvent {
 			TopicClient.getInstance().publish("sensor-manager", wrapperObject.toString(), false);
 		}
 		logger.exit();
+	}
+	
+	/**
+	 * Register with local sensors to receive data
+	 * @param photographyAgent
+	 * @param string
+	 */
+	public void registerWithLocalSensor(ILocalSensorSubscriber subscriber, String dataType) {
+		subscriberMap.put(subscriber, dataType);
+	}
+	
+	public void unregisterWithLocalSensor(ILocalSensorSubscriber subscriber) {
+		subscriberMap.remove(subscriber);
 	}
 
 	public void onEvent(String event) {
