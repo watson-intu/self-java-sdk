@@ -159,9 +159,9 @@ public class BlackBoard implements IEvent {
 		ThingEvent thingEvent = new ThingEvent();
 		thingEvent.setEventType(ThingEventType.TE_NONE);
 		thingEvent.setEvent(wrapperObject);
+		IThing someThing = new IThing();
 		if(eventName.equals("add_object")) {
-			thingEvent.setEventType(ThingEventType.TE_ADDED);
-			IThing someThing = new IThing();
+			thingEvent.setEventType(ThingEventType.TE_ADDED);			
 			thingEvent.setThing(someThing);
 			try {
 				someThing.deserialize(wrapperObject.get("thing").getAsJsonObject());
@@ -187,18 +187,31 @@ public class BlackBoard implements IEvent {
 			String guid = wrapperObject.get("thing_guid").getAsString();
 			if(thingMap.containsKey(guid)) {
 				String state = wrapperObject.get("state").getAsString();
-				IThing someThing = thingMap.get(guid);
-				someThing.setState(state);
-				thingMap.put(guid, someThing);
+				IThing updateThing = thingMap.get(guid);
+				updateThing.setState(state);
+				thingMap.put(guid, updateThing);
+			}
+			else {
+				try {
+					someThing.deserialize(wrapperObject.get("thing").getAsJsonObject());
+					if(wrapperObject.has("parent")) {
+						someThing.setParentId(wrapperObject.get("parent").getAsString());
+					}
+					thingEvent.setThing(someThing);
+					thingMap.put(thingEvent.getThing().getGuid(), thingEvent.getThing());
+				}
+				catch (Exception e) {
+					logger.error("Failed to deserialized Blackboard object when state has changed!!");
+				}
 			}
 		}
 		else if(eventName.equals("set_object_importance")) {
 			String guid = wrapperObject.get("thing_guid").getAsString();
 			if(thingMap.containsKey(guid)) {
 				long importance = wrapperObject.get("importance").getAsLong();
-				IThing someThing = thingMap.get(guid);
-				someThing.setImportance(importance);
-				thingMap.put(guid, someThing);
+				IThing importantThing = thingMap.get(guid);
+				importantThing.setImportance(importance);
+				thingMap.put(guid, importantThing);
 			}
 		}
 		

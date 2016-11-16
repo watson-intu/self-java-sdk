@@ -195,6 +195,9 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 			}
 			JsonParser parser = new JsonParser();
 			JsonObject wrapperObject = parser.parse(message).getAsJsonObject();
+			if(!wrapperObject.has("binary")) {
+				return;
+			}
 			if(!wrapperObject.get("binary").getAsBoolean()) {
 				if(subscriptionMap.containsKey(wrapperObject.get("topic").getAsString())) {
 					subscriptionMap.get(wrapperObject.get("topic").getAsString())
