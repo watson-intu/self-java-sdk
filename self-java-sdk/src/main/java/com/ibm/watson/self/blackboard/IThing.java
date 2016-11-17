@@ -84,8 +84,14 @@ public class IThing {
 		if(body != null) {
 			for(Entry<String, JsonElement> entry : body.entrySet()) {
 				String key = entry.getKey();
-				String value = entry.getValue().getAsString();
-				wrapperObject.addProperty(key, value);
+				if(entry.getValue().isJsonObject()) {
+					JsonObject value = entry.getValue().getAsJsonObject();
+					wrapperObject.add(key, value);
+				}
+				else {
+					String value = entry.getValue().getAsString();
+					wrapperObject.addProperty(key, value);
+				}
 			}
 		}
 		wrapperObject.addProperty("Type_", type);
