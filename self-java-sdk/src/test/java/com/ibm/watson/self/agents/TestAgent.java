@@ -56,7 +56,7 @@ public class TestAgent {
 			logger.error("Cannot connect to Intu!! Shutting down...");
 			return;
 		}
-		PhotographyAgent agent = new PhotographyAgent();
+		GameAgent agent = new GameAgent();
 		AgentSociety.getInstance().addAgent(agent, false);
 		
 		int i = 0;

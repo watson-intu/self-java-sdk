@@ -1,10 +1,13 @@
 package com.ibm.watson.self.agents;
 
+import java.util.Random;
 import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ibm.watson.self.blackboard.BlackBoard;
@@ -19,6 +22,14 @@ public class GameAgent implements IAgent, IBlackBoard {
 	UUID uuid = UUID.randomUUID();
 	
 	private String instanceId;
+	private String animal = null;
+	private int failures = 0;
+	
+	private static final String DIRECTORY = "shared/sounds/";
+	private static final String WAV = ".wav";	
+	private static final String[] ANIMALS = { "bird", "cat", "cow", "dog", "rooster" };
+	private static final String[] CORRECT_ANSWERS = { "That's right! Congratulations!", "Correct! Good job!", "You got it! Way to go!" };
+	private static final String[] WRONG_ANSWERS = { "That's wrong! Try again!", "Not quite, try another time!", "Nice shot, but try again!" };
 	
 	public GameAgent() {
 		instanceId = uuid.toString();
@@ -26,7 +37,6 @@ public class GameAgent implements IAgent, IBlackBoard {
 	
 	public void onThingEvent(ThingEvent thingEvent) {
 		String type = thingEvent.getThing().getType();
-		System.out.println("Received event: " + type);
 		if(type.equals("ProxyIntent")) {
 			onProxyIntent(thingEvent.getThing());
 		}
@@ -36,23 +46,85 @@ public class GameAgent implements IAgent, IBlackBoard {
 		logger.entry();
 		JsonParser parser = new JsonParser();
 		JsonObject intentObject = parser.parse(thing.toString()).getAsJsonObject();
-		if(!intentObject.get("m_Intent").getAsJsonObject().get("conversation")
+		logger.info(intentObject);
+		if(intentObject.get("m_Intent").getAsJsonObject().get("conversation")
 				.getAsJsonObject().get("intents").getAsJsonArray()
 				.get(0).getAsJsonObject().get("intent").getAsString().equals("game_intent"))
 		{
-			logger.error("Not a game intent!");
-			return;
+			onGameIntent();
 		}
+		else if(intentObject.get("m_Intent").getAsJsonObject().get("conversation")
+				.getAsJsonObject().get("intents").getAsJsonArray()
+				.get(0).getAsJsonObject().get("intent").getAsString().equals("animal_intent")) {
+			onAnimalIntent(intentObject);
+		}
+
+	}
+	
+	private void onGameIntent() {
+		String file = getRandomAnimal();
 		JsonObject wrapperObject = new JsonObject();
 		JsonObject paramsObject = new JsonObject();
 		paramsObject.addProperty("Type_", "ParamsMap");
-		paramsObject.addProperty("sound", "shared/sounds/dog.wav");
+		paramsObject.addProperty("sound", file);
 		wrapperObject.add("m_Params", paramsObject);
 		wrapperObject.addProperty("m_Name", "Game");
 		IThing sayThing = new IThing();
 		sayThing.setType("Goal");
 		sayThing.setBody(wrapperObject);
 		BlackBoard.getInstance().addThing(sayThing, "");
+	}
+	
+	private void onAnimalIntent(JsonObject intentObject) {
+		JsonArray entities = intentObject.get("m_Intent").getAsJsonObject().get("conversation")
+				.getAsJsonObject().get("entities").getAsJsonArray();
+		String targetAnimal = null;
+		for(JsonElement e : entities) {
+			JsonObject element = e.getAsJsonObject();
+			if(element.get("entity").getAsString().equals("animals")) {
+				targetAnimal = element.get("value").getAsString();
+				break;
+			}
+		}
+		
+		if(targetAnimal != null && animal != null) {
+			if(targetAnimal.equals(animal)) {
+				JsonObject wrapperObject = new JsonObject();
+				int rand = new Random().nextInt(CORRECT_ANSWERS.length);
+				wrapperObject.addProperty("m_Text", CORRECT_ANSWERS[rand]);
+				IThing thing = new IThing();
+				thing.setType("Say");
+				thing.setBody(wrapperObject);
+				BlackBoard.getInstance().addThing(thing, "");
+				animal = null;
+			}
+			else {
+				failures++;
+				JsonObject wrapperObject = new JsonObject();
+				if(failures == 3)
+				{
+					wrapperObject.addProperty("m_Text", "You suck at this. the answer was: " + animal);
+					animal = null;
+					failures = 0;
+				}
+				else {
+					int rand = new Random().nextInt(WRONG_ANSWERS.length);
+					wrapperObject.addProperty("m_Text", WRONG_ANSWERS[rand]);
+				}
+				IThing thing = new IThing();
+				thing.setType("Say");
+				thing.setBody(wrapperObject);
+				BlackBoard.getInstance().addThing(thing, "");
+				
+			}
+			
+		}
+	}
+	
+	private String getRandomAnimal() {
+		int rand = new Random().nextInt(ANIMALS.length);
+		animal = ANIMALS[rand];
+		return DIRECTORY + animal + WAV;
 	}
 
 	public String getAgentName() {
