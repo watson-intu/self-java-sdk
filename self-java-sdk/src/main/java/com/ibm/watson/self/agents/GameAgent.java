@@ -97,6 +97,7 @@ public class GameAgent implements IAgent, IBlackBoard {
 				thing.setBody(wrapperObject);
 				BlackBoard.getInstance().addThing(thing, "");
 				animal = null;
+				failures = 0;
 			}
 			else {
 				failures++;
