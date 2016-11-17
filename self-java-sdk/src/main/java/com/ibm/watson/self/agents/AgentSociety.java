@@ -55,7 +55,6 @@ public class AgentSociety implements IEvent {
 	public void removeAgent(IAgent agent) {
 		logger.entry();
 		if(agentMap.containsKey(agent.getAgentId())) {
-			agentMap.remove(agent.getAgentId());
 			overrideMap.remove(agent.getAgentId());
 			JsonObject wrapperObject = new JsonObject();
 			wrapperObject.addProperty("event", "remove_agent_proxy");
@@ -67,7 +66,6 @@ public class AgentSociety implements IEvent {
 
 	public void onEvent(String event) {
 		logger.entry();
-		logger.info(event);
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		String agentId = wrapperObject.get("agentId").getAsString();
@@ -90,6 +88,7 @@ public class AgentSociety implements IEvent {
 				logger.info("Failed to stop agent: " + agent.getAgentName());
 				failed = true;
 			}
+			agentMap.remove(agent.getAgentId());
 		}
 		
 		if(failed) {

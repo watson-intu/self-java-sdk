@@ -128,6 +128,10 @@ public class IThing {
 			this.data = wrapperObject.get("m_Data").getAsJsonObject();
 		}
 	}
+	
+	public String toString() {
+		return body.toString();
+	}
 
 	public String getType() {
 		return type;

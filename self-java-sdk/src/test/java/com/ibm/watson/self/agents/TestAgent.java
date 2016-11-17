@@ -56,12 +56,7 @@ public class TestAgent {
 			logger.error("Cannot connect to Intu!! Shutting down...");
 			return;
 		}
-		ExampleAgent agent = new ExampleAgent();
-		if(!agent.onStart()) {
-			logger.error("Failed to start agent!");
-			return;
-		}
-			
+		PhotographyAgent agent = new PhotographyAgent();
 		AgentSociety.getInstance().addAgent(agent, false);
 		
 		int i = 0;
