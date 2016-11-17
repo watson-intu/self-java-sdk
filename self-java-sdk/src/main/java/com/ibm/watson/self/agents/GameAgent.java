@@ -34,10 +34,8 @@ public class GameAgent implements IAgent, IBlackBoard {
 	
 	private void onProxyIntent(IThing thing) {
 		logger.entry();
-		System.out.println(thing.toString());
 		JsonParser parser = new JsonParser();
 		JsonObject intentObject = parser.parse(thing.toString()).getAsJsonObject();
-		System.out.println("onProxyIntent() " + intentObject);
 		if(!intentObject.get("m_Intent").getAsJsonObject().get("conversation")
 				.getAsJsonObject().get("intents").getAsJsonArray()
 				.get(0).getAsJsonObject().get("intent").getAsString().equals("game_intent"))
@@ -45,7 +43,6 @@ public class GameAgent implements IAgent, IBlackBoard {
 			logger.error("Not a game intent!");
 			return;
 		}
-		System.out.println("Received game intent");
 		JsonObject wrapperObject = new JsonObject();
 		JsonObject paramsObject = new JsonObject();
 		paramsObject.addProperty("Type_", "ParamsMap");
@@ -55,7 +52,6 @@ public class GameAgent implements IAgent, IBlackBoard {
 		IThing sayThing = new IThing();
 		sayThing.setType("Goal");
 		sayThing.setBody(wrapperObject);
-		System.out.println("Sending the payload: " + sayThing.serialize());
 		BlackBoard.getInstance().addThing(sayThing, "");
 	}
 
@@ -69,7 +65,6 @@ public class GameAgent implements IAgent, IBlackBoard {
 
 	public boolean onStart() {
 		logger.entry();
-		System.out.println("Started GameAgent...");
 		BlackBoard.getInstance().subscribeToType("ProxyIntent", ThingEventType.TE_ADDED, this, "");
 		return logger.exit(true);
 	}
