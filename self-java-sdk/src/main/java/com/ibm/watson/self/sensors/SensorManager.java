@@ -107,6 +107,24 @@ public class SensorManager implements IEvent {
 	}
 	
 	/**
+	 * Find an ISensor based on dataType it has
+	 * @param dataType - type of data sensor produces
+	 * @return - the instance of the sensor
+	 */
+	public ISensor findSensor(String dataType) {
+		logger.entry();
+		
+		for(String sensorId : sensorMap.keySet()) {
+			ISensor sensor = sensorMap.get(sensorId);
+			if(sensor.getDataType().equals(dataType)) {
+				return sensor;
+			}
+		}
+		
+		return logger.exit(null);
+	}
+	
+	/**
 	 * Register with local sensors to receive data
 	 * @param photographyAgent
 	 * @param string

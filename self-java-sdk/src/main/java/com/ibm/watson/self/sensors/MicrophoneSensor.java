@@ -76,7 +76,8 @@ public class MicrophoneSensor implements ISensor {
 	}
 	
 	public void sendData(byte[] buffer) {
-		SensorManager.getInstance().sendData(this, buffer);
+		if(!isPaused)
+			SensorManager.getInstance().sendData(this, buffer);
 	}
 	
 	/**
