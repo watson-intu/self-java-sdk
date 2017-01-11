@@ -52,13 +52,13 @@ public class MicrophoneSensor implements ISensor {
 
 	public boolean onStart() {
 		isStarted = true;
-//		startListening();
-//		if(isMicrophoneOpen) {
-//			Thread thread = new Thread(new CaptureAudio());
-//			thread.start();
-//			System.out.println("Starting Microphone!");
-//			return true;
-//		}
+		startListening();
+		if(isMicrophoneOpen) {
+			Thread thread = new Thread(new CaptureAudio());
+			thread.start();
+			System.out.println("Starting Microphone!");
+			return true;
+		}
 		return true;
 	}
 

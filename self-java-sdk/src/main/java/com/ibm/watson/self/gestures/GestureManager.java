@@ -104,7 +104,7 @@ public class GestureManager implements IEvent {
 	 * Shutdown GestureManager by unsubscribing to remote self
 	 */
 	public void shutdown() {
-		TopicClient.getInstance().unsubscribe("gesture-manager", this);	
+		TopicClient.getInstance().unsubscribe(GestureConstants.GESTURE_MANAGER, this);	
 		started = false;
 	}
 	
@@ -116,11 +116,12 @@ public class GestureManager implements IEvent {
 	public void onGestureDone(IGesture gesture, boolean error) {
 		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
-		wrapperObject.addProperty("event", "execute_done");
-		wrapperObject.addProperty("gestureId", gesture.getGestureId());
-		wrapperObject.addProperty("instanceId", gesture.getInstanceId());
-		wrapperObject.addProperty("error", error);
-		TopicClient.getInstance().publish("gesture-manager", wrapperObject.toString(), false);
+		wrapperObject.addProperty(GestureConstants.EVENT, GestureConstants.EXECUTE_DONE);
+		wrapperObject.addProperty(GestureConstants.GESTURE_ID, gesture.getGestureId());
+		wrapperObject.addProperty(GestureConstants.INSTANCE_ID, gesture.getInstanceId());
+		wrapperObject.addProperty(GestureConstants.ERROR, error);
+		TopicClient.getInstance().publish(GestureConstants.GESTURE_MANAGER, 
+				wrapperObject.toString(), false);
 		inputMap.remove(0);
 		// Perform any more tasks that have been queued up
 		if(inputMap.size() > 0) {
@@ -145,22 +146,22 @@ public class GestureManager implements IEvent {
 			logger.entry();
 			JsonParser parser = new JsonParser();
 			JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
-			String gestureId = wrapperObject.get("gestureId").getAsString();
-			String instanceId = wrapperObject.get("instanceId").getAsString();
-			String eventName = wrapperObject.get("event").getAsString();
+			String gestureId = wrapperObject.get(GestureConstants.GESTURE_ID).getAsString();
+			String instanceId = wrapperObject.get(GestureConstants.INSTANCE_ID).getAsString();
+			String eventName = wrapperObject.get(GestureConstants.EVENT).getAsString();
 			IGesture gesture = gesturesMap.get(gestureId);
 			if(gesture == null) {
 				logger.error("Failed to find gesture: " + gestureId);
 				return;
 			}
 			
-			if(eventName.equals("execute_gesture")) {
-				JsonObject paramsObject = wrapperObject.get("params").getAsJsonObject();
+			if(eventName.equals(GestureConstants.EXECUTE_GESTURE)) {
+				JsonObject paramsObject = wrapperObject.get(GestureConstants.PARAMS).getAsJsonObject();
 				if(!gesture.execute(paramsObject)) {
 					logger.error("Failed to execute gesture: " + gestureId);
 				}
 			}
-			else if(eventName.equals("abort_gesture")) {
+			else if(eventName.equals(GestureConstants.ABORT_GESTURE)) {
 				if(!gesture.abort()) {
 					logger.error("Failed to abort gesture: " + gestureId);
 					if(inputMap.size() > 0)
@@ -169,9 +170,10 @@ public class GestureManager implements IEvent {
 			}
 			else {
 				JsonObject failedObject = new JsonObject();
-				failedObject.addProperty("failed_event", eventName);
-				failedObject.addProperty("event", "error");
-				TopicClient.getInstance().publish("gesture-manager", failedObject.toString(), false);
+				failedObject.addProperty(GestureConstants.FAILED_EVENT, eventName);
+				failedObject.addProperty(GestureConstants.EVENT, GestureConstants.ERROR);
+				TopicClient.getInstance().publish(GestureConstants.GESTURE_MANAGER, 
+						failedObject.toString(), false);
 				if(inputMap.size() > 0)
 					inputMap.remove(0);
 			}

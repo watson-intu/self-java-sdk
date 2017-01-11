@@ -66,8 +66,8 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 	
 		@Override
 		public void beforeRequest(Map<String, List<String>> headers) {
-		    headers.put("selfId", Arrays.asList(selfId));
-		    headers.put("token", Arrays.asList(token));
+		    headers.put(TopicConstants.SELF_ID, Arrays.asList(selfId));
+		    headers.put(TopicConstants.TOKEN, Arrays.asList(token));
 		    super.beforeRequest(headers);
 		}
     }
@@ -102,7 +102,7 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 	 */
 	public boolean connect(String host, String port) throws DeploymentException, IOException {
 		logger.entry();
-		uri = URI.create("ws://" + host + ":" + port + "/stream");
+		uri = URI.create(TopicConstants.WS + host + TopicConstants.COLON + port + TopicConstants.STREAM);
 		logger.info("Connecting to: " + uri.toString());
 		synchronized (sessionLock) {
 			if (handshakeModifier == null) {
@@ -150,7 +150,7 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 		    if (session == null) {
 		    	return;
 		    }
-		    message.addProperty("origin", this.selfId + "/.");
+		    message.addProperty(TopicConstants.ORIGIN, this.selfId + TopicConstants.ROOT);
 		    session.getAsyncRemote().sendText(message.toString());
 		}
 		logger.exit();
@@ -162,10 +162,10 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 			if (session == null) {
 				return;
 			}
-			wrapperObject.addProperty("data", data.length);
-			wrapperObject.addProperty("origin", this.selfId + "/.");
+			wrapperObject.addProperty(TopicConstants.DATA, data.length);
+			wrapperObject.addProperty(TopicConstants.ORIGIN, this.selfId + TopicConstants.ROOT);
 			try {
-				byte[] header = wrapperObject.toString().getBytes("UTF-8");
+				byte[] header = wrapperObject.toString().getBytes(TopicConstants.UTF8);
 				byte[] frame = new byte[header.length + data.length + 1];
 				System.arraycopy(header, 0, frame, 0, header.length);
 				System.arraycopy(data, 0, frame, header.length + 1, data.length);
@@ -195,13 +195,13 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 			}
 			JsonParser parser = new JsonParser();
 			JsonObject wrapperObject = parser.parse(message).getAsJsonObject();
-			if(!wrapperObject.has("binary")) {
+			if(!wrapperObject.has(TopicConstants.BINARY)) {
 				return;
 			}
-			if(!wrapperObject.get("binary").getAsBoolean()) {
-				if(subscriptionMap.containsKey(wrapperObject.get("topic").getAsString())) {
-					subscriptionMap.get(wrapperObject.get("topic").getAsString())
-						.onEvent(wrapperObject.get("data").getAsString());
+			if(!wrapperObject.get(TopicConstants.BINARY).getAsBoolean()) {
+				if(subscriptionMap.containsKey(wrapperObject.get(TopicConstants.TOPIC).getAsString())) {
+					subscriptionMap.get(wrapperObject.get(TopicConstants.TOPIC).getAsString())
+						.onEvent(wrapperObject.get(TopicConstants.DATA).getAsString());
 				}
 			}
 		}
@@ -213,11 +213,11 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	JsonObject wrapperObject = new JsonObject();
     	JsonArray pathArray = new JsonArray();
     	pathArray.add(new JsonPrimitive(path));
-    	wrapperObject.add("targets", pathArray);
-    	wrapperObject.addProperty("msg", "publish_at");
-    	wrapperObject.addProperty("data", data);
-    	wrapperObject.addProperty("binary", false);
-    	wrapperObject.addProperty("persisted", persisted);
+    	wrapperObject.add(TopicConstants.TARGETS, pathArray);
+    	wrapperObject.addProperty(TopicConstants.MSG, TopicConstants.PUBLISH_AT);
+    	wrapperObject.addProperty(TopicConstants.DATA, data);
+    	wrapperObject.addProperty(TopicConstants.BINARY, false);
+    	wrapperObject.addProperty(TopicConstants.PERSISTED, persisted);
     	this.sendMessage(wrapperObject);
     	logger.exit();
     }
@@ -227,10 +227,10 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	JsonObject wrapperObject = new JsonObject();
     	JsonArray pathArray = new JsonArray();
     	pathArray.add(new JsonPrimitive(path));
-    	wrapperObject.add("targets", pathArray);
-    	wrapperObject.addProperty("msg", "publish_at");
-    	wrapperObject.addProperty("binary", true);
-    	wrapperObject.addProperty("persisted", persisted);
+    	wrapperObject.add(TopicConstants.TARGETS, pathArray);
+    	wrapperObject.addProperty(TopicConstants.MSG, TopicConstants.PUBLISH_AT);
+    	wrapperObject.addProperty(TopicConstants.BINARY, true);
+    	wrapperObject.addProperty(TopicConstants.PERSISTED, persisted);
     	this.sendMessage(wrapperObject, data);
     	logger.exit();
     }
@@ -243,8 +243,8 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	JsonObject wrapperObject = new JsonObject();
     	JsonArray wrapperArray = new JsonArray();
     	wrapperArray.add(new JsonPrimitive(path));
-    	wrapperObject.add("targets", wrapperArray);
-    	wrapperObject.addProperty("msg", "subscribe");
+    	wrapperObject.add(TopicConstants.TARGETS, wrapperArray);
+    	wrapperObject.addProperty(TopicConstants.MSG, TopicConstants.SUBSCRIBE);
     	this.sendMessage(wrapperObject);
     	logger.exit();
     }
@@ -256,8 +256,8 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     		JsonObject wrapperObject = new JsonObject();
     		JsonArray wrapperArray = new JsonArray();
     		wrapperArray.add(new JsonPrimitive(path));
-    		wrapperObject.add("targets", wrapperArray);
-    		wrapperObject.addProperty("msg", "unsubscribe");
+    		wrapperObject.add(TopicConstants.TARGETS, wrapperArray);
+    		wrapperObject.addProperty(TopicConstants.MSG, TopicConstants.UNSUBSCRIBE);
     		this.sendMessage(wrapperObject);
     		return logger.exit(true);
     	}
