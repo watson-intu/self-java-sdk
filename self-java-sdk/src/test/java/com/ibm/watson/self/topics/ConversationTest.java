@@ -3,8 +3,6 @@ package com.ibm.watson.self.topics;
 import java.io.IOException;
 import java.util.Scanner;
 
-import javax.websocket.DeploymentException;
-
 import com.google.gson.JsonObject;
 import com.ibm.watson.self.blackboard.IThing;
 import com.ibm.watson.self.constants.SelfConfigurationConstants;
@@ -33,22 +31,13 @@ public class ConversationTest {
 		TopicClient client = TopicClient.getInstance();
 		client.setHeaders(SelfConfigurationConstants.SELF_ID, 
 				SelfConfigurationConstants.TOKEN);
-		try {
-			if(host != null) {
-				client.connect(host, port);
-			}
-			else {
-				client.connect(SelfConfigurationConstants.HOST, 
-						SelfConfigurationConstants.PORT);
-			}
-		} catch (DeploymentException e) {
-			e.printStackTrace();
-			return false;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
+		if(host != null) {
+			client.connect(host, port);
 		}
-		
+		else {
+			client.connect(SelfConfigurationConstants.HOST, 
+					SelfConfigurationConstants.PORT);
+		}
 		return true;
 	}
 	

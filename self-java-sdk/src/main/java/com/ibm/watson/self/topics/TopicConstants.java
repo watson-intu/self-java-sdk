@@ -19,4 +19,6 @@ public class TopicConstants {
 	public static final String PERSISTED		= "persisted";
 	public static final String SUBSCRIBE		= "subscribe";
 	public static final String UNSUBSCRIBE		= "unsubscribe";
+	public static final String CONTROL		 	= "control";
+	public static final String AUTHENTICATE	 	= "authenticate";
 }
