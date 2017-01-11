@@ -2,8 +2,6 @@ package com.ibm.watson.self.agents;
 
 import java.io.IOException;
 
-import javax.websocket.DeploymentException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,22 +29,13 @@ public class TestAgent {
 		TopicClient client = TopicClient.getInstance();
 		client.setHeaders(SelfConfigurationConstants.SELF_ID, 
 				SelfConfigurationConstants.TOKEN);
-		try {
-			if(host != null) {
-				client.connect(host, port);
-			}
-			else {
-				client.connect(SelfConfigurationConstants.HOST, 
-						SelfConfigurationConstants.PORT);
-			}
-		} catch (DeploymentException e) {
-			e.printStackTrace();
-			return false;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
+		if(host != null) {
+			client.connect(host, port);
 		}
-		
+		else {
+			client.connect(SelfConfigurationConstants.HOST, 
+					SelfConfigurationConstants.PORT);
+		}
 		return true;
 	}
 	

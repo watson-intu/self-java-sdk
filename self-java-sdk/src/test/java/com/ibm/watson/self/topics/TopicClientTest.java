@@ -1,9 +1,5 @@
 package com.ibm.watson.self.topics;
 
-import java.io.IOException;
-
-import javax.websocket.DeploymentException;
-
 import com.ibm.watson.self.constants.SelfConfigurationConstants;
 import com.ibm.watson.self.gestures.AnimateGesture;
 import com.ibm.watson.self.gestures.DisplayGesture;
@@ -20,13 +16,15 @@ public class TopicClientTest {
 		TopicClient client = TopicClient.getInstance();
 		client.setHeaders(SelfConfigurationConstants.SELF_ID, 
 				SelfConfigurationConstants.TOKEN);
-		try {
-			client.connect(SelfConfigurationConstants.HOST, 
-					SelfConfigurationConstants.PORT);
-		} catch (DeploymentException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		client.connect(SelfConfigurationConstants.HOST, 
+				SelfConfigurationConstants.PORT);
+		while(!client.isConnected()) {
+			try {
+				System.out.println("Client not connected yet");
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		DisplayGesture gesture = new DisplayGesture();
 		SpeechGesture speech = new SpeechGesture();

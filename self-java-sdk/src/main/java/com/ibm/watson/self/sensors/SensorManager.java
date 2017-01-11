@@ -142,7 +142,6 @@ public class SensorManager implements IEvent {
 
 	public void onEvent(String event) {
 		logger.entry();
-		System.out.println(event);
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		String eventName = wrapperObject.get(SensorConstants.EVENT).getAsString();

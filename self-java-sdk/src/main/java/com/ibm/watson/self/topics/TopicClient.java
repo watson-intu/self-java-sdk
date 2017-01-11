@@ -2,85 +2,58 @@ package com.ibm.watson.self.topics;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-import javax.websocket.ClientEndpointConfig;
-import javax.websocket.CloseReason;
-import javax.websocket.DeploymentException;
-import javax.websocket.Endpoint;
-import javax.websocket.EndpointConfig;
-import javax.websocket.MessageHandler;
-import javax.websocket.OnClose;
-import javax.websocket.OnMessage;
-import javax.websocket.SendHandler;
-import javax.websocket.SendResult;
-import javax.websocket.Session;
+import okhttp3.JavaNetCookieJar;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Request.Builder;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.ws.WebSocket;
+import okhttp3.ws.WebSocketCall;
+import okhttp3.ws.WebSocketListener;
+import okio.Buffer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.tyrus.client.ClientManager;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
-public class TopicClient extends Endpoint implements MessageHandler.Whole<String>, SendHandler {
+public class TopicClient implements WebSocketListener {
 
 	/*          Logging                 */
 
     private static Logger logger = LogManager.getLogger(TopicClient.class.getName());
     
     /*			Variables				*/
-    private Object sessionLock;
-    private Session session;
-    private URI uri;
-    private ClientManager client;
+    private WebSocket socket;
+    private boolean socketOpen;
+    private boolean authenticated = false;
+    private OkHttpClient client;
     private HashMap<String, IEvent> subscriptionMap = new HashMap<String, IEvent>();
     private static TopicClient instance = null;
     private String selfId;
     private String token;
-    
-    /**
-     * Modifier for HTTP handshake request.
-     */
-    public static class HandshakeModifier extends ClientEndpointConfig.Configurator {
-	
-		private String selfId;
-		private String token;
-	
-		/**
-		 * Constructor with authorization value Base64 encoded user:password.
-		 * @param authorization
-		 */
-	
-		public HandshakeModifier(String selfId, String token) {
-		    this.selfId = selfId;
-		    this.token = token;
-		}
-	
-		@Override
-		public void beforeRequest(Map<String, List<String>> headers) {
-		    headers.put(TopicConstants.SELF_ID, Arrays.asList(selfId));
-		    headers.put(TopicConstants.TOKEN, Arrays.asList(token));
-		    super.beforeRequest(headers);
-		}
-    }
-    
-    // handshake modifier to add headers to main self instance
-    private HandshakeModifier handshakeModifier;
+    private WebSocketListener listener;
+    private WebSocketCall call;
     
     public TopicClient() {
-    	this.handshakeModifier = null;
-    	this.session = null;
-    	this.uri = null;
-    	this.client = ClientManager.createClient();
-    	this.sessionLock = new Object();
+    	this.client = configureHttpClient();
+    	this.socketOpen = false;
+    	this.listener = this;
     }
     
     public static TopicClient getInstance() {
@@ -90,8 +63,24 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
     	return instance;
     }
     
+    private OkHttpClient configureHttpClient() {
+    	logger.entry();
+    	
+    	OkHttpClient.Builder builder = new OkHttpClient.Builder();
+    	CookieManager cookieManager = new CookieManager();
+    	cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+    	
+ //   	builder.cookieJar(new JavaNetCookieJar(cookieManager));
+    	builder.connectTimeout(60,  TimeUnit.SECONDS);
+    	builder.writeTimeout(60, TimeUnit.SECONDS);
+    	builder.readTimeout(90, TimeUnit.SECONDS);
+    	
+    	return logger.exit(builder.build());
+    	
+    }
+    
 	/**
-	 * Connect to WebSocket server
+	 * Connect to WebSocket server`
 	 * @param host - ip address
 	 * @param port - port number
 	 * @param selfId - unique self id
@@ -100,44 +89,16 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
 	 * @throws IOException 
 	 * @throws DeploymentException 
 	 */
-	public boolean connect(String host, String port) throws DeploymentException, IOException {
+	public boolean connect(String host, String port)  {
 		logger.entry();
-		uri = URI.create(TopicConstants.WS + host + TopicConstants.COLON + port + TopicConstants.STREAM);
-		logger.info("Connecting to: " + uri.toString());
-		synchronized (sessionLock) {
-			if (handshakeModifier == null) {
-			    client.connectToServer(this, uri);
-			} 
-			else {				
-			    ClientEndpointConfig modifier = ClientEndpointConfig.Builder.create()
-				    .configurator(handshakeModifier).build();
-			    client.connectToServer(this, modifier, uri);
-			}
-		}
+		Builder builder = new Request.Builder().url(TopicConstants.WS + host 
+				+ TopicConstants.COLON + port + TopicConstants.STREAM);
+		builder.addHeader(TopicConstants.SELF_ID, this.selfId);
+		builder.addHeader(TopicConstants.TOKEN, this.token);
+		this.call = WebSocketCall.create(this.client, builder.build());
+		this.call.enqueue(this.listener);
+		
 		return logger.exit(true);
-	}
-
-    /**
-     * Callback hook for Connection close events.
-     *
-     * @param userSession the userSession which is getting closed.
-     * @param reason the reason for connection close
-     */
-    @OnClose
-    public void onClose(Session userSession, CloseReason reason) {
-    	logger.entry();
-    	this.session = null;
-        logger.info("closing websocket");
-        logger.exit();
-    }
-
-	@Override
-	public void onOpen(Session session, EndpointConfig arg1) {
-		logger.entry();
-		TopicClient.this.session = session;
-		session.addMessageHandler(this);
-		logger.info("opening websocket!");	
-		logger.exit();
 	}
 	
     /**
@@ -146,64 +107,37 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
      */
     public void sendMessage(JsonObject message) {
     	logger.entry();
-		synchronized (sessionLock) {
-		    if (session == null) {
-		    	return;
-		    }
-		    message.addProperty(TopicConstants.ORIGIN, this.selfId + TopicConstants.ROOT);
-		    session.getAsyncRemote().sendText(message.toString());
-		}
+    	try {
+    		if(this.socketOpen) {
+    			message.addProperty(TopicConstants.ORIGIN, this.selfId + TopicConstants.ROOT);
+    			socket.sendMessage(RequestBody.create(WebSocket.TEXT, message.toString()));
+    		}
+    		else
+    			logger.info("Not Connected!");
+    	}
+    	catch (IOException e) {
+    		logger.error(e.getMessage());
+    	}
 		logger.exit();
     }
     
     private void sendMessage(JsonObject wrapperObject, byte[] data) {
     	logger.entry();
-		synchronized (sessionLock) {
-			if (session == null) {
-				return;
+		wrapperObject.addProperty(TopicConstants.DATA, data.length);
+		wrapperObject.addProperty(TopicConstants.ORIGIN, this.selfId + TopicConstants.ROOT);
+		try {
+			byte[] header = wrapperObject.toString().getBytes(TopicConstants.UTF8);
+			byte[] frame = new byte[header.length + data.length + 1];
+			System.arraycopy(header, 0, frame, 0, header.length);
+			System.arraycopy(data, 0, frame, header.length + 1, data.length);
+			if(this.socketOpen) {
+				socket.sendMessage(RequestBody.create(WebSocket.BINARY, frame));
 			}
-			wrapperObject.addProperty(TopicConstants.DATA, data.length);
-			wrapperObject.addProperty(TopicConstants.ORIGIN, this.selfId + TopicConstants.ROOT);
-			try {
-				byte[] header = wrapperObject.toString().getBytes(TopicConstants.UTF8);
-				byte[] frame = new byte[header.length + data.length + 1];
-				System.arraycopy(header, 0, frame, 0, header.length);
-				System.arraycopy(data, 0, frame, header.length + 1, data.length);
-				session.getAsyncRemote().sendBinary(ByteBuffer.wrap(frame));
-			} catch (UnsupportedEncodingException e) {
-				logger.error("Failed to send binary data over socket!");
-			}
-			
+			else
+				logger.info("Not Connected!");
 		}
-		logger.exit();
-	}
-    
-    
-	public void onResult(SendResult result) {	
-		logger.entry();
-		if (!result.isOK()) {
-			logger.error("Received error on Result");
-		}
-		logger.exit();
-	}
-
-	public void onMessage(String message) {
-		logger.entry();
-		synchronized (sessionLock) {
-			if(session == null) {
-				return;
-			}
-			JsonParser parser = new JsonParser();
-			JsonObject wrapperObject = parser.parse(message).getAsJsonObject();
-			if(!wrapperObject.has(TopicConstants.BINARY)) {
-				return;
-			}
-			if(!wrapperObject.get(TopicConstants.BINARY).getAsBoolean()) {
-				if(subscriptionMap.containsKey(wrapperObject.get(TopicConstants.TOPIC).getAsString())) {
-					subscriptionMap.get(wrapperObject.get(TopicConstants.TOPIC).getAsString())
-						.onEvent(wrapperObject.get(TopicConstants.DATA).getAsString());
-				}
-			}
+		catch (Exception e) {
+			logger.error(e.getMessage());
 		}
 		logger.exit();
 	}
@@ -270,9 +204,7 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
      * @return
      */
     public boolean isConnected() {
-		synchronized (sessionLock) {
-		    return (session != null && session.isOpen());
-		}
+    	return this.socketOpen && this.authenticated;
     }
     
     /**
@@ -281,11 +213,58 @@ public class TopicClient extends Endpoint implements MessageHandler.Whole<String
      */
     public void setHeaders(String selfId, String token) {
     	logger.entry();
-		if (handshakeModifier != null || isConnected())
-		    return;
-		handshakeModifier = new HandshakeModifier(selfId, token);
 		this.selfId = selfId;
 		this.token = token;
 		logger.exit();
     }
+
+	public void onClose(int arg0, String arg1) {
+    	logger.entry();
+    	this.socketOpen = false;
+    	this.authenticated = false;
+        logger.info("closing websocket");
+        logger.exit();	
+	}
+
+	public void onFailure(IOException arg0, Response arg1) {
+		logger.entry();
+		logger.info(arg1.toString());
+		this.socketOpen = false;
+		logger.exit();		
+	}
+
+	public void onMessage(ResponseBody message) throws IOException {
+		logger.entry();
+		String response = message.string();
+		JsonParser parser = new JsonParser();
+		JsonObject wrapperObject = parser.parse(response).getAsJsonObject();
+		if(!wrapperObject.has(TopicConstants.BINARY)) {
+			if(wrapperObject.has(TopicConstants.CONTROL)) {
+				if (wrapperObject.get(TopicConstants.CONTROL).getAsString().equals(TopicConstants.AUTHENTICATE)) {
+					this.authenticated = true;
+				}
+			}
+		}
+		else if(!wrapperObject.get(TopicConstants.BINARY).getAsBoolean()) {
+			if(subscriptionMap.containsKey(wrapperObject.get(TopicConstants.TOPIC).getAsString())) {
+				subscriptionMap.get(wrapperObject.get(TopicConstants.TOPIC).getAsString())
+					.onEvent(wrapperObject.get(TopicConstants.DATA).getAsString());
+			}
+		}
+		logger.exit();
+		
+	}
+
+	public void onOpen(WebSocket socket, Response arg1) {
+		logger.entry();
+		this.socket = socket;
+		this.socketOpen = true;
+		logger.info("opening websocket!");	
+		logger.exit();
+		
+	}
+
+	public void onPong(Buffer arg0) {
+		logger.info("OnPong() called"); 
+	}
 }
