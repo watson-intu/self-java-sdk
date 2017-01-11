@@ -22,7 +22,7 @@ public class SensorManager implements IEvent {
 	private static Logger logger = LogManager.getLogger(SensorManager.class.getName());
 	
 	public SensorManager() {
-		TopicClient.getInstance().subscribe("sensor-manager", this);
+		TopicClient.getInstance().subscribe(SensorConstants.SENSOR_MANAGER, this);
 		started = true;
 	}
 	
@@ -43,13 +43,14 @@ public class SensorManager implements IEvent {
 		logger.entry();
 		if(!sensorMap.containsKey(sensor.getSensorId())) {
 			JsonObject wrapperObject = new JsonObject();
-			wrapperObject.addProperty("event", "add_sensor_proxy");
-			wrapperObject.addProperty("sensorId", sensor.getSensorId());
-			wrapperObject.addProperty("name", sensor.getSensorName());
-			wrapperObject.addProperty("data_type", sensor.getDataType());
-			wrapperObject.addProperty("binary_type", sensor.getBinaryType());
-			wrapperObject.addProperty("override", override);
-			TopicClient.getInstance().publish("sensor-manager", wrapperObject.toString(), false);
+			wrapperObject.addProperty(SensorConstants.EVENT, SensorConstants.ADD_SENSOR_PROXY);
+			wrapperObject.addProperty(SensorConstants.SENSOR_ID, sensor.getSensorId());
+			wrapperObject.addProperty(SensorConstants.NAME, sensor.getSensorName());
+			wrapperObject.addProperty(SensorConstants.DATA_TYPE, sensor.getDataType());
+			wrapperObject.addProperty(SensorConstants.BINARY_TYPE, sensor.getBinaryType());
+			wrapperObject.addProperty(SensorConstants.OVERRIDE, override);
+			TopicClient.getInstance().publish(SensorConstants.SENSOR_MANAGER, 
+					wrapperObject.toString(), false);
 			sensorMap.put(sensor.getSensorId(), sensor);
 			overridesMap.put(sensor.getSensorId(), override);
 			logger.info("Adding sensor id: " + sensor.getSensorId());
@@ -77,7 +78,8 @@ public class SensorManager implements IEvent {
 			logger.error("SendData() invoked on unregistered sensor: " + sensor.getSensorId());
 		}
 		else {
-			TopicClient.getInstance().publish("sensor-proxy-" + sensor.getSensorId(), data, false);
+			TopicClient.getInstance().publish(SensorConstants.SENSOR_PROXY + sensor.getSensorId(), 
+					data, false);
 		}
 		
 		for(ILocalSensorSubscriber key : subscriberMap.keySet())
@@ -99,9 +101,10 @@ public class SensorManager implements IEvent {
 			sensorMap.remove(sensor.getSensorId());
 			overridesMap.remove(sensor.getSensorId());
 			JsonObject wrapperObject = new JsonObject();
-			wrapperObject.addProperty("event", "remove_sensor_proxy");
-			wrapperObject.addProperty("sensorId", sensor.getSensorId());
-			TopicClient.getInstance().publish("sensor-manager", wrapperObject.toString(), false);
+			wrapperObject.addProperty(SensorConstants.EVENT, SensorConstants.REMOVE_SENSOR_PROXY);
+			wrapperObject.addProperty(SensorConstants.SENSOR_ID, sensor.getSensorId());
+			TopicClient.getInstance().publish(SensorConstants.SENSOR_MANAGER, 
+					wrapperObject.toString(), false);
 		}
 		logger.exit();
 	}
@@ -139,40 +142,42 @@ public class SensorManager implements IEvent {
 
 	public void onEvent(String event) {
 		logger.entry();
+		System.out.println(event);
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
-		String eventName = wrapperObject.get("event").getAsString();
-		String sensorId = wrapperObject.get("sensorId").getAsString();
+		String eventName = wrapperObject.get(SensorConstants.EVENT).getAsString();
+		String sensorId = wrapperObject.get(SensorConstants.SENSOR_ID).getAsString();
 		ISensor sensor = sensorMap.get(sensorId);
 		if(sensor == null) {
 			logger.error("Failed to find sensor: " + sensorId);
 			return;
 		}
 		boolean error = false;
-		if(eventName.equals("start_sensor")) {
+		if(eventName.equals(SensorConstants.START_SENSOR)) {
 			if(!sensorMap.get(sensorId).onStart()) {
 				logger.error("Failed to start sensor!");
 				error = true;
 			}
 		}
-		else if(eventName.equals("stop_sensor")) {
+		else if(eventName.equals(SensorConstants.STOP_SENSOR)) {
 			if(!sensorMap.get(sensorId).onStop()) {
 				logger.error("Failed to stop sensor!");
 				error = true;
 			}
 		}
-		else if(eventName.equals("pause_sensor")) {
+		else if(eventName.equals(SensorConstants.PAUSE_SENSOR)) {
 			sensorMap.get(sensorId).onPause();
 		}
-		else if(eventName.equals("resume_sensor")) {
+		else if(eventName.equals(SensorConstants.RESUME_SENSOR)) {
 			sensorMap.get(sensorId).onResume();
 		}
 		
 		if(error) {
 			JsonObject failedObject = new JsonObject();
-			failedObject.addProperty("failed_event", eventName);
-			failedObject.addProperty("event", "error");
-			TopicClient.getInstance().publish("sensor-manager", failedObject.toString(), false);
+			failedObject.addProperty(SensorConstants.FAILED_EVENT, eventName);
+			failedObject.addProperty(SensorConstants.EVENT, SensorConstants.ERROR);
+			TopicClient.getInstance().publish(SensorConstants.SENSOR_MANAGER, 
+					failedObject.toString(), false);
 		}
 		logger.exit();
 	}
@@ -182,7 +187,7 @@ public class SensorManager implements IEvent {
 	}
 
 	public void shutdown() {
-		TopicClient.getInstance().unsubscribe("sensor-manager", this);
+		TopicClient.getInstance().unsubscribe(SensorConstants.SENSOR_MANAGER, this);
 		started = false;
 		
 	}

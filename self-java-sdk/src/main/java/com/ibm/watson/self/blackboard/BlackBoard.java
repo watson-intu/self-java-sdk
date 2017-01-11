@@ -38,7 +38,7 @@ public class BlackBoard implements IEvent {
 	public void subscribeToType(String type, IThing.ThingEventType thingEvent, IBlackBoard blackboard, String path) {
 		logger.entry();
 		if(!subscriptionMap.containsKey(path)) {
-			TopicClient.getInstance().subscribe(path + "blackboard", this);
+			TopicClient.getInstance().subscribe(path + BlackBoardConstants.BLACKBOARD, this);
 			HashMap<String, List<Subscriber>> tempMap = new HashMap<String, List<Subscriber>>();
 			subscriptionMap.put(path, tempMap);
 		}
@@ -46,10 +46,10 @@ public class BlackBoard implements IEvent {
 		HashMap<String, List<Subscriber>> types = subscriptionMap.get(path);
 		if(!types.containsKey(type)) {
 			JsonObject wrapperObject = new JsonObject();
-			wrapperObject.addProperty("event", "subscribe_to_type");
-			wrapperObject.addProperty("type", type);
-			wrapperObject.addProperty("event_mask", thingEvent.getId());
-			TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
+			wrapperObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.SUBSCRIBE_TO_TYPE);
+			wrapperObject.addProperty(BlackBoardConstants.TYPE, type);
+			wrapperObject.addProperty(BlackBoardConstants.EVENT_MASK, thingEvent.getId());
+			TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, wrapperObject.toString(), false);
 			List<Subscriber> tempSubList = new ArrayList<Subscriber>();
 			types.put(type, tempSubList);
 		}
@@ -80,9 +80,11 @@ public class BlackBoard implements IEvent {
 			
 			if(!types.containsKey(type)) {
 				JsonObject wrapperObject = new JsonObject();
-				wrapperObject.addProperty("event", "unsubscribe_from_type");
-				wrapperObject.addProperty("type", type);
-				TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
+				wrapperObject.addProperty(BlackBoardConstants.EVENT, 
+						BlackBoardConstants.UNSUBSCRIBE_FROM_TYPE);
+				wrapperObject.addProperty(BlackBoardConstants.TYPE, type);
+				TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, 
+						wrapperObject.toString(), false);
 				subscriptionMap.remove(path);
 			}
 			else {
@@ -95,13 +97,14 @@ public class BlackBoard implements IEvent {
 	public void addThing(IThing thing, String path) {
 		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
-		wrapperObject.addProperty("event", "add_object");
-		wrapperObject.addProperty("type", thing.getType());
-		wrapperObject.add("thing", thing.serialize());
+		wrapperObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.ADD_OBJECT);
+		wrapperObject.addProperty(BlackBoardConstants.TYPE, thing.getType());
+		wrapperObject.add(BlackBoardConstants.THING, thing.serialize());
 		if(thing.getParentId() != null && !thing.getParentId().isEmpty())
-			wrapperObject.addProperty("parent", thing.getParentId());
+			wrapperObject.addProperty(BlackBoardConstants.PARENT, thing.getParentId());
 		
-		TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
+		TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, 
+				wrapperObject.toString(), false);
 		logger.exit();
 	}
 	
@@ -112,9 +115,10 @@ public class BlackBoard implements IEvent {
 	public void removeThing(String guid, String path) {
 		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
-		wrapperObject.addProperty("event", "remove_object");
-		wrapperObject.addProperty("thing_guid", guid);		
-		TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
+		wrapperObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.REMOVE_OBJECT);
+		wrapperObject.addProperty(BlackBoardConstants.THING_GUID, guid);		
+		TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, 
+				wrapperObject.toString(), false);
 		logger.exit();
 	}
 	
@@ -126,10 +130,11 @@ public class BlackBoard implements IEvent {
 	public void setState(String guid, String state, String path) {
 		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
-		wrapperObject.addProperty("event", "set_object_state");
-		wrapperObject.addProperty("thing_guid", guid);
-		wrapperObject.addProperty("state", state);
-		TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
+		wrapperObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.SET_OBJECT_STATE);
+		wrapperObject.addProperty(BlackBoardConstants.THING_GUID, guid);
+		wrapperObject.addProperty(BlackBoardConstants.STATE, state);
+		TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, 
+				wrapperObject.toString(), false);
 		logger.exit();
 	}
 	
@@ -140,10 +145,11 @@ public class BlackBoard implements IEvent {
 	public void setImportance(String guid, double importance, String path) {
 		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
-		wrapperObject.addProperty("event", "set_object_importance");
-		wrapperObject.addProperty("thing_guid", guid);
-		wrapperObject.addProperty("importance", importance);
-		TopicClient.getInstance().publish(path + "blackboard", wrapperObject.toString(), false);
+		wrapperObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.SET_OBJECT_IMPORTANCE);
+		wrapperObject.addProperty(BlackBoardConstants.THING_GUID, guid);
+		wrapperObject.addProperty(BlackBoardConstants.IMPORTANCE, importance);
+		TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, 
+				wrapperObject.toString(), false);
 		logger.exit();
 	}
 
@@ -152,20 +158,20 @@ public class BlackBoard implements IEvent {
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
 		boolean failed = false;
-		String eventName = wrapperObject.get("event").getAsString();
-		String type = wrapperObject.get("type").getAsString();
+		String eventName = wrapperObject.get(BlackBoardConstants.EVENT).getAsString();
+		String type = wrapperObject.get(BlackBoardConstants.TYPE).getAsString();
 		
 		ThingEvent thingEvent = new ThingEvent();
 		thingEvent.setEventType(ThingEventType.TE_NONE);
 		thingEvent.setEvent(wrapperObject);
 		IThing someThing = new IThing();
-		if(eventName.equals("add_object")) {
+		if(eventName.equals(BlackBoardConstants.ADD_OBJECT)) {
 			thingEvent.setEventType(ThingEventType.TE_ADDED);			
 			thingEvent.setThing(someThing);
 			try {
-				someThing.deserialize(wrapperObject.get("thing").getAsJsonObject());
-				if(wrapperObject.has("parent")) {
-					someThing.setParentId(wrapperObject.get("parent").getAsString());
+				someThing.deserialize(wrapperObject.get(BlackBoardConstants.THING).getAsJsonObject());
+				if(wrapperObject.has(BlackBoardConstants.PARENT)) {
+					someThing.setParentId(wrapperObject.get(BlackBoardConstants.PARENT).getAsString());
 				}
 				thingEvent.setThing(someThing);
 				thingMap.put(thingEvent.getThing().getGuid(), thingEvent.getThing());				
@@ -175,26 +181,26 @@ public class BlackBoard implements IEvent {
 				failed = true;
 			}
 		}
-		else if(eventName.equals("remove_object")) {
+		else if(eventName.equals(BlackBoardConstants.REMOVE_OBJECT)) {
 			thingEvent.setEventType(ThingEventType.TE_REMOVED);
-			String guid = wrapperObject.get("thing_guid").getAsString();
+			String guid = wrapperObject.get(BlackBoardConstants.THING_GUID).getAsString();
 			if(thingMap.containsKey(guid)) {
 				thingMap.remove(guid);
 			}
 		}
-		else if(eventName.equals("set_object_state")) {
-			String guid = wrapperObject.get("thing_guid").getAsString();
+		else if(eventName.equals(BlackBoardConstants.SET_OBJECT_STATE)) {
+			String guid = wrapperObject.get(BlackBoardConstants.THING_GUID).getAsString();
 			if(thingMap.containsKey(guid)) {
-				String state = wrapperObject.get("state").getAsString();
+				String state = wrapperObject.get(BlackBoardConstants.STATE).getAsString();
 				IThing updateThing = thingMap.get(guid);
 				updateThing.setState(state);
 				thingMap.put(guid, updateThing);
 			}
 			else {
 				try {
-					someThing.deserialize(wrapperObject.get("thing").getAsJsonObject());
-					if(wrapperObject.has("parent")) {
-						someThing.setParentId(wrapperObject.get("parent").getAsString());
+					someThing.deserialize(wrapperObject.get(BlackBoardConstants.THING).getAsJsonObject());
+					if(wrapperObject.has(BlackBoardConstants.PARENT)) {
+						someThing.setParentId(wrapperObject.get(BlackBoardConstants.PARENT).getAsString());
 					}
 					thingEvent.setThing(someThing);
 					thingMap.put(thingEvent.getThing().getGuid(), thingEvent.getThing());
@@ -204,10 +210,10 @@ public class BlackBoard implements IEvent {
 				}
 			}
 		}
-		else if(eventName.equals("set_object_importance")) {
-			String guid = wrapperObject.get("thing_guid").getAsString();
+		else if(eventName.equals(BlackBoardConstants.SET_OBJECT_IMPORTANCE)) {
+			String guid = wrapperObject.get(BlackBoardConstants.THING_GUID).getAsString();
 			if(thingMap.containsKey(guid)) {
-				long importance = wrapperObject.get("importance").getAsLong();
+				long importance = wrapperObject.get(BlackBoardConstants.IMPORTANCE).getAsLong();
 				IThing importantThing = thingMap.get(guid);
 				importantThing.setImportance(importance);
 				thingMap.put(guid, importantThing);
@@ -216,8 +222,8 @@ public class BlackBoard implements IEvent {
 		
 		if(failed) {
 			JsonObject failedObject = new JsonObject();
-			failedObject.addProperty("failed_event", eventName);
-			failedObject.addProperty("event", "error");
+			failedObject.addProperty(BlackBoardConstants.FAILED_EVENT, eventName);
+			failedObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.ERROR);
 			// TODO: Get origin and publish failed event back to origin path
 //			TopicClient.getInstance().publish(path, data, persisted);
 		}
@@ -246,7 +252,7 @@ public class BlackBoard implements IEvent {
 		logger.entry();
 		started = false;
 		for(String path : subscriptionMap.keySet()) {
-			TopicClient.getInstance().unsubscribe(path + "blackboard", this);
+			TopicClient.getInstance().unsubscribe(path + BlackBoardConstants.BLACKBOARD, this);
 		}
 		logger.exit();
 	}

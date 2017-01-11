@@ -70,11 +70,11 @@ public class IThing {
 	public IThing() {
 		UUID uuid 	= UUID.randomUUID();
 		
-        setType("IThing");
+        setType(BlackBoardConstants.ITHING);
         setCategory(ThingCategory.TT_PERCEPTION);		
 		setGuid(uuid.toString());
         setImportance(1.0f);
-        setState("ADDED");
+        setState(BlackBoardConstants.ADDED);
         setCreateTime((new Date().getTime()) / 1000);
         setLifeSpan(3600.0);
     }
@@ -94,16 +94,16 @@ public class IThing {
 				}
 			}
 		}
-		wrapperObject.addProperty("Type_", type);
-		wrapperObject.addProperty("m_eCategory", category.getId());
-		wrapperObject.addProperty("m_GUID", guid);
-		wrapperObject.addProperty("m_fImportance", importance);
-		wrapperObject.addProperty("m_State", state);
-		wrapperObject.addProperty("m_fLifeSpan", lifeSpan);
+		wrapperObject.addProperty(BlackBoardConstants.TYPE_, type);
+		wrapperObject.addProperty(BlackBoardConstants.CATEGORY, category.getId());
+		wrapperObject.addProperty(BlackBoardConstants.GUID, guid);
+		wrapperObject.addProperty(BlackBoardConstants.M_IMPORTANCE, importance);
+		wrapperObject.addProperty(BlackBoardConstants.M_STATE, state);
+		wrapperObject.addProperty(BlackBoardConstants.LIFE_SPAN, lifeSpan);
 		
 		if(dataType != null && !dataType.isEmpty()) {
-			wrapperObject.addProperty("m_DataType", dataType);
-			wrapperObject.add("m_Data", data);
+			wrapperObject.addProperty(BlackBoardConstants.DATA_TYPE, dataType);
+			wrapperObject.add(BlackBoardConstants.DATA, data);
 		}
 		
 		return wrapperObject;
@@ -111,27 +111,27 @@ public class IThing {
 	
 	public void deserialize(JsonObject wrapperObject) {
 		this.body = wrapperObject;
-		this.type = wrapperObject.get("Type_").getAsString();
+		this.type = wrapperObject.get(BlackBoardConstants.TYPE_).getAsString();
 		ThingCategory thingCategory = ThingCategory.TT_INVALID;
-		thingCategory.setId(wrapperObject.get("m_eCategory").getAsInt());
+		thingCategory.setId(wrapperObject.get(BlackBoardConstants.CATEGORY).getAsInt());
 		this.category = thingCategory;
-		this.guid = wrapperObject.get("m_GUID").getAsString();
-		this.state = wrapperObject.get("m_State").getAsString();
+		this.guid = wrapperObject.get(BlackBoardConstants.GUID).getAsString();
+		this.state = wrapperObject.get(BlackBoardConstants.M_STATE).getAsString();
 		
-		if(wrapperObject.has("m_fImportance")) {
-			this.importance = wrapperObject.get("m_fImportance").getAsDouble();
+		if(wrapperObject.has(BlackBoardConstants.M_IMPORTANCE)) {
+			this.importance = wrapperObject.get(BlackBoardConstants.M_IMPORTANCE).getAsDouble();
 		}
-		if(wrapperObject.has("m_CreateTime")) {
-			this.createTime = (long) wrapperObject.get("m_CreateTime").getAsDouble();
+		if(wrapperObject.has(BlackBoardConstants.CREATE_TIME)) {
+			this.createTime = (long) wrapperObject.get(BlackBoardConstants.CREATE_TIME).getAsDouble();
 		}
-		if(wrapperObject.has("m_fLifeSpan")) {
-			this.lifeSpan = wrapperObject.get("m_fLifeSpan").getAsDouble();
+		if(wrapperObject.has(BlackBoardConstants.LIFE_SPAN)) {
+			this.lifeSpan = wrapperObject.get(BlackBoardConstants.LIFE_SPAN).getAsDouble();
 		}
-		if(wrapperObject.has("m_DataType")) {
-			this.dataType = wrapperObject.get("m_DataType").getAsString();
+		if(wrapperObject.has(BlackBoardConstants.DATA_TYPE)) {
+			this.dataType = wrapperObject.get(BlackBoardConstants.DATA_TYPE).getAsString();
 		}
-		if(wrapperObject.has("m_Data")) {
-			this.data = wrapperObject.get("m_Data").getAsJsonObject();
+		if(wrapperObject.has(BlackBoardConstants.DATA)) {
+			this.data = wrapperObject.get(BlackBoardConstants.DATA).getAsJsonObject();
 		}
 	}
 	

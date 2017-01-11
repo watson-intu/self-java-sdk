@@ -41,11 +41,11 @@ public class AgentSociety implements IEvent {
 		logger.entry();
 		if(!agentMap.containsKey(agent.getAgentId())) {
 			JsonObject wrapperObject = new JsonObject();
-			wrapperObject.addProperty("event", "add_agent_proxy");
-			wrapperObject.addProperty("agentId", agent.getAgentId());
-			wrapperObject.addProperty("name", agent.getAgentName());
-			wrapperObject.addProperty("override", override);
-			TopicClient.getInstance().publish("agent-society", wrapperObject.toString(), false);
+			wrapperObject.addProperty(AgentConstants.EVENT, AgentConstants.ADD_AGENT_PROXY);
+			wrapperObject.addProperty(AgentConstants.AGENT_ID, agent.getAgentId());
+			wrapperObject.addProperty(AgentConstants.NAME, agent.getAgentName());
+			wrapperObject.addProperty(AgentConstants.OVERRIDE, override);
+			TopicClient.getInstance().publish(AgentConstants.AGENT_SOCIETY, wrapperObject.toString(), false);
 			agentMap.put(agent.getAgentId(), agent);
 			overrideMap.put(agent.getAgentId(), override);
 		}
@@ -57,9 +57,9 @@ public class AgentSociety implements IEvent {
 		if(agentMap.containsKey(agent.getAgentId())) {
 			overrideMap.remove(agent.getAgentId());
 			JsonObject wrapperObject = new JsonObject();
-			wrapperObject.addProperty("event", "remove_agent_proxy");
-			wrapperObject.addProperty("agentId", agent.getAgentId());
-			TopicClient.getInstance().publish("agent-society", wrapperObject.toString(), false);
+			wrapperObject.addProperty(AgentConstants.EVENT, AgentConstants.REMOVE_AGENT_PROXY);
+			wrapperObject.addProperty(AgentConstants.AGENT_ID, agent.getAgentId());
+			TopicClient.getInstance().publish(AgentConstants.AGENT_SOCIETY, wrapperObject.toString(), false);
 		}
 		logger.exit();
 	}
@@ -68,7 +68,7 @@ public class AgentSociety implements IEvent {
 		logger.entry();
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(event).getAsJsonObject();
-		String agentId = wrapperObject.get("agentId").getAsString();
+		String agentId = wrapperObject.get(AgentConstants.AGENT_ID).getAsString();
 		IAgent agent = agentMap.get(agentId);
 		if(agent == null) {
 			logger.info("Failed to find agent!");
@@ -76,14 +76,14 @@ public class AgentSociety implements IEvent {
 		}
 		
 		boolean failed = false;
-		String eventName = wrapperObject.get("event").getAsString();
-		if(eventName.equals("start_agent")) {
+		String eventName = wrapperObject.get(AgentConstants.EVENT).getAsString();
+		if(eventName.equals(AgentConstants.START_AGENT)) {
 			if(!agent.onStart()) {
 				logger.info("Failed to start agent: " + agent.getAgentName());
 				failed = true;
 			}
 		}
-		else if(eventName.equals("stop_agent")) {
+		else if(eventName.equals(AgentConstants.STOP_AGENT)) {
 			if(!agent.onStop()) {
 				logger.info("Failed to stop agent: " + agent.getAgentName());
 				failed = true;
@@ -93,9 +93,9 @@ public class AgentSociety implements IEvent {
 		
 		if(failed) {
 			JsonObject failedObject = new JsonObject();
-			failedObject.addProperty("failed_event", eventName);
-			failedObject.addProperty("event", "error");
-			TopicClient.getInstance().publish("agent-society", wrapperObject.toString(), false);
+			failedObject.addProperty(AgentConstants.FAILED_EVENT, eventName);
+			failedObject.addProperty(AgentConstants.EVENT, AgentConstants.ERROR);
+			TopicClient.getInstance().publish(AgentConstants.AGENT_SOCIETY, wrapperObject.toString(), false);
 		}
 		logger.exit();
 	}
@@ -106,6 +106,6 @@ public class AgentSociety implements IEvent {
 
 	public void shutdown() {
 		started = false;
-		TopicClient.getInstance().unsubscribe("agent-society", this);
+		TopicClient.getInstance().unsubscribe(AgentConstants.AGENT_SOCIETY, this);
 	}
 }
