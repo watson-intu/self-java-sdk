@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.ibm.watson.self.agents.AgentSociety;
+import com.ibm.watson.self.sensors.ISensor;
+import com.ibm.watson.self.sensors.SensorConstants;
 import com.ibm.watson.self.topics.IEvent;
 import com.ibm.watson.self.topics.TopicClient;
 
@@ -179,5 +181,26 @@ public class GestureManager implements IEvent {
 			}
 			logger.exit();
 		}	
+	}
+
+	public void onDisconnect() {
+		for (String gestureId : gesturesMap.keySet()) {
+			IGesture gesture = gesturesMap.get(gestureId);
+			gesture.onStop();
+		}
+	}
+
+	public void onReconnect() {
+		for (String sensorId : gesturesMap.keySet()) {
+			JsonObject wrapperObject = new JsonObject();
+			IGesture gesture = gesturesMap.get(sensorId);
+			wrapperObject.addProperty("event", "add_gesture_proxy");
+			wrapperObject.addProperty("gestureId", gesture.getGestureId());
+			wrapperObject.addProperty("instanceId", gesture.getInstanceId());
+			wrapperObject.addProperty("override", overrideMap.get(gesture.getGestureId()));
+			TopicClient.getInstance().publish("gesture-manager", wrapperObject.toString(), false);
+			TopicClient.getInstance().publish(SensorConstants.SENSOR_MANAGER, 
+					wrapperObject.toString(), false);
+		}
 	}
 }

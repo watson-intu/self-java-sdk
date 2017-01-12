@@ -49,6 +49,7 @@ public class TopicClient implements WebSocketListener {
     private String port;
     private WebSocketListener listener;
     private WebSocketCall call;
+    private boolean disconnected = false;
     
     public TopicClient() {
     	this.client = configureHttpClient();
@@ -226,7 +227,6 @@ public class TopicClient implements WebSocketListener {
 
 	public void onFailure(IOException arg0, Response arg1) {
 		logger.entry();
-		logger.info(arg1.toString());
 		this.socketOpen = false;
 		onReconnect();
 		logger.exit();		
@@ -235,6 +235,10 @@ public class TopicClient implements WebSocketListener {
 	private void onReconnect() {
 		if (this.socket != null) {
 			try {
+				this.disconnected = true;
+				for(String topic : subscriptionMap.keySet()) {
+					subscriptionMap.get(topic).onDisconnect();
+				}
 				logger.info("Client reconnecting in 5 seconds...");
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
@@ -267,6 +271,12 @@ public class TopicClient implements WebSocketListener {
 		this.socket = socket;
 		this.socketOpen = true;
 		logger.info("opening websocket!");	
+		if(this.disconnected) {
+			for(String topic : subscriptionMap.keySet()) {
+				subscriptionMap.get(topic).onReconnect();
+			}
+			this.disconnected = false;
+		}
 		logger.exit();
 		
 	}
