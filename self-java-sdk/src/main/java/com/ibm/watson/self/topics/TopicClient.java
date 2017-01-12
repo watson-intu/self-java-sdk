@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.JavaNetCookieJar;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
@@ -41,14 +40,16 @@ public class TopicClient implements WebSocketListener {
     /*			Variables				*/
     private WebSocket socket;
     private boolean socketOpen;
-    private boolean authenticated = false;
     private OkHttpClient client;
-    private HashMap<String, IEvent> subscriptionMap = new HashMap<String, IEvent>();
+    private final Map<String, IEvent> subscriptionMap = new HashMap<String, IEvent>();
     private static TopicClient instance = null;
     private String selfId;
     private String token;
+    private String host;
+    private String port;
     private WebSocketListener listener;
     private WebSocketCall call;
+    private boolean disconnected = false;
     
     public TopicClient() {
     	this.client = configureHttpClient();
@@ -66,11 +67,7 @@ public class TopicClient implements WebSocketListener {
     private OkHttpClient configureHttpClient() {
     	logger.entry();
     	
-    	OkHttpClient.Builder builder = new OkHttpClient.Builder();
-    	CookieManager cookieManager = new CookieManager();
-    	cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-    	
- //   	builder.cookieJar(new JavaNetCookieJar(cookieManager));
+    	OkHttpClient.Builder builder = new OkHttpClient.Builder();    	
     	builder.connectTimeout(60,  TimeUnit.SECONDS);
     	builder.writeTimeout(60, TimeUnit.SECONDS);
     	builder.readTimeout(90, TimeUnit.SECONDS);
@@ -91,8 +88,10 @@ public class TopicClient implements WebSocketListener {
 	 */
 	public boolean connect(String host, String port)  {
 		logger.entry();
-		Builder builder = new Request.Builder().url(TopicConstants.WS + host 
-				+ TopicConstants.COLON + port + TopicConstants.STREAM);
+		this.host = host;
+		this.port = port;
+		Builder builder = new Request.Builder().url(TopicConstants.WS + this.host 
+				+ TopicConstants.COLON + this.port + TopicConstants.STREAM);
 		builder.addHeader(TopicConstants.SELF_ID, this.selfId);
 		builder.addHeader(TopicConstants.TOKEN, this.token);
 		this.call = WebSocketCall.create(this.client, builder.build());
@@ -204,7 +203,7 @@ public class TopicClient implements WebSocketListener {
      * @return
      */
     public boolean isConnected() {
-    	return this.socketOpen && this.authenticated;
+    	return this.socketOpen;
     }
     
     /**
@@ -221,16 +220,32 @@ public class TopicClient implements WebSocketListener {
 	public void onClose(int arg0, String arg1) {
     	logger.entry();
     	this.socketOpen = false;
-    	this.authenticated = false;
         logger.info("closing websocket");
+        onReconnect();
         logger.exit();	
 	}
 
 	public void onFailure(IOException arg0, Response arg1) {
 		logger.entry();
-		logger.info(arg1.toString());
 		this.socketOpen = false;
+		onReconnect();
 		logger.exit();		
+	}
+	
+	private void onReconnect() {
+		if (this.socket != null) {
+			try {
+				this.disconnected = true;
+				for(String topic : subscriptionMap.keySet()) {
+					subscriptionMap.get(topic).onDisconnect();
+				}
+				logger.info("Client reconnecting in 5 seconds...");
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			connect(this.host, this.port);
+		}
 	}
 
 	public void onMessage(ResponseBody message) throws IOException {
@@ -239,11 +254,7 @@ public class TopicClient implements WebSocketListener {
 		JsonParser parser = new JsonParser();
 		JsonObject wrapperObject = parser.parse(response).getAsJsonObject();
 		if(!wrapperObject.has(TopicConstants.BINARY)) {
-			if(wrapperObject.has(TopicConstants.CONTROL)) {
-				if (wrapperObject.get(TopicConstants.CONTROL).getAsString().equals(TopicConstants.AUTHENTICATE)) {
-					this.authenticated = true;
-				}
-			}
+			return;
 		}
 		else if(!wrapperObject.get(TopicConstants.BINARY).getAsBoolean()) {
 			if(subscriptionMap.containsKey(wrapperObject.get(TopicConstants.TOPIC).getAsString())) {
@@ -260,6 +271,12 @@ public class TopicClient implements WebSocketListener {
 		this.socket = socket;
 		this.socketOpen = true;
 		logger.info("opening websocket!");	
+		if(this.disconnected) {
+			for(String topic : subscriptionMap.keySet()) {
+				subscriptionMap.get(topic).onReconnect();
+			}
+			this.disconnected = false;
+		}
 		logger.exit();
 		
 	}

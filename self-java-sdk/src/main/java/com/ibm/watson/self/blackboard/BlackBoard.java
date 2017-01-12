@@ -35,7 +35,8 @@ public class BlackBoard implements IEvent {
 		return instance;
 	}
 	
-	public void subscribeToType(String type, IThing.ThingEventType thingEvent, IBlackBoard blackboard, String path) {
+	public void subscribeToType(String type, IThing.ThingEventType thingEvent, 
+			IBlackBoard blackboard, String path) {
 		logger.entry();
 		if(!subscriptionMap.containsKey(path)) {
 			TopicClient.getInstance().subscribe(path + BlackBoardConstants.BLACKBOARD, this);
@@ -49,7 +50,8 @@ public class BlackBoard implements IEvent {
 			wrapperObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.SUBSCRIBE_TO_TYPE);
 			wrapperObject.addProperty(BlackBoardConstants.TYPE, type);
 			wrapperObject.addProperty(BlackBoardConstants.EVENT_MASK, thingEvent.getId());
-			TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, wrapperObject.toString(), false);
+			TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, 
+					wrapperObject.toString(), false);
 			List<Subscriber> tempSubList = new ArrayList<Subscriber>();
 			types.put(type, tempSubList);
 		}
@@ -255,5 +257,26 @@ public class BlackBoard implements IEvent {
 			TopicClient.getInstance().unsubscribe(path + BlackBoardConstants.BLACKBOARD, this);
 		}
 		logger.exit();
+	}
+
+	public void onDisconnect() {
+		logger.info("BlackBoard has been disconnected!");
+	}
+
+	public void onReconnect() {
+		
+		for (String path : subscriptionMap.keySet()) {
+			TopicClient.getInstance().subscribe(path + BlackBoardConstants.BLACKBOARD, this);
+			for(String type : subscriptionMap.get(path).keySet()) {
+				JsonObject wrapperObject = new JsonObject();
+				wrapperObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.SUBSCRIBE_TO_TYPE);
+				wrapperObject.addProperty(BlackBoardConstants.TYPE, type);
+				Subscriber subscriber = subscriptionMap.get(path).get(type).get(0);
+				wrapperObject.addProperty(BlackBoardConstants.EVENT_MASK, 
+						subscriber.getEventType().getId());
+				TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, 
+						wrapperObject.toString(), false);
+			}
+		}
 	}
 }

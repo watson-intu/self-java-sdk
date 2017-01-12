@@ -14,4 +14,28 @@ public class Subscriber {
 		this.path = path;
 	}
 	
+	public IBlackBoard getCallback() {
+		return this.callback;
+	}
+	
+	public void setCallback(IBlackBoard callback) {
+		this.callback = callback;
+	}
+	
+	public ThingEventType getEventType() {
+		return this.eventType;
+	}
+	
+	public void setEventType(ThingEventType eventType) {
+		this.eventType = eventType;
+	}
+	
+	public String getPath() {
+		return this.path;
+	}
+	
+	public void setPath(String path) {
+		this.path = path;
+	}
+	
 }

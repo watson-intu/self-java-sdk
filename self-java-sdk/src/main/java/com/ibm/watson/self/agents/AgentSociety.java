@@ -7,6 +7,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.ibm.watson.self.sensors.ISensor;
+import com.ibm.watson.self.sensors.SensorConstants;
 import com.ibm.watson.self.topics.IEvent;
 import com.ibm.watson.self.topics.TopicClient;
 
@@ -107,5 +109,26 @@ public class AgentSociety implements IEvent {
 	public void shutdown() {
 		started = false;
 		TopicClient.getInstance().unsubscribe(AgentConstants.AGENT_SOCIETY, this);
+	}
+
+	public void onDisconnect() {
+		for (String agentId : agentMap.keySet()) {
+			IAgent agent = agentMap.get(agentId);
+			agent.onStop();
+		}
+	}
+
+	public void onReconnect() {
+		for (String agentId : agentMap.keySet()) {
+			JsonObject wrapperObject = new JsonObject();
+			IAgent agent = agentMap.get(agentId);
+			wrapperObject.addProperty(AgentConstants.EVENT, AgentConstants.ADD_AGENT_PROXY);
+			wrapperObject.addProperty(AgentConstants.AGENT_ID, agent.getAgentId());
+			wrapperObject.addProperty(AgentConstants.NAME, agent.getAgentName());
+			wrapperObject.addProperty(AgentConstants.OVERRIDE, overrideMap.get(agentId));
+			TopicClient.getInstance().publish(AgentConstants.AGENT_SOCIETY, wrapperObject.toString(), false);
+			TopicClient.getInstance().publish(SensorConstants.SENSOR_MANAGER, 
+					wrapperObject.toString(), false);
+		}
 	}
 }
