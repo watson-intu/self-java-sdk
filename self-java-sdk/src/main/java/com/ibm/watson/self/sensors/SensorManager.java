@@ -188,6 +188,27 @@ public class SensorManager implements IEvent {
 	public void shutdown() {
 		TopicClient.getInstance().unsubscribe(SensorConstants.SENSOR_MANAGER, this);
 		started = false;
-		
+	}
+
+	public void onDisconnect() {
+		for(String sensorId : sensorMap.keySet()) {
+			ISensor sensor = sensorMap.get(sensorId);
+			sensor.onStop();
+		}
+	}
+
+	public void onReconnect() {
+		for (String sensorId : sensorMap.keySet()) {
+			JsonObject wrapperObject = new JsonObject();
+			ISensor sensor = sensorMap.get(sensorId);
+			wrapperObject.addProperty(SensorConstants.EVENT, SensorConstants.ADD_SENSOR_PROXY);
+			wrapperObject.addProperty(SensorConstants.SENSOR_ID, sensor.getSensorId());
+			wrapperObject.addProperty(SensorConstants.NAME, sensor.getSensorName());
+			wrapperObject.addProperty(SensorConstants.DATA_TYPE, sensor.getDataType());
+			wrapperObject.addProperty(SensorConstants.BINARY_TYPE, sensor.getBinaryType());
+			wrapperObject.addProperty(SensorConstants.OVERRIDE, overridesMap.get(sensorId));
+			TopicClient.getInstance().publish(SensorConstants.SENSOR_MANAGER, 
+					wrapperObject.toString(), false);
+		}
 	}
 }

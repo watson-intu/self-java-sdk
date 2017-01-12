@@ -7,4 +7,8 @@ public interface IEvent {
 	public boolean isActive();
 	
 	public void shutdown();
+	
+	public void onDisconnect();
+	
+	public void onReconnect();
 }
