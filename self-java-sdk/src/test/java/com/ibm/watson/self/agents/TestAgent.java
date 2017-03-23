@@ -40,12 +40,20 @@ public class TestAgent {
 	}
 	
 	public TestAgent() {
-		boolean isConnected = connectToIntu();
-		if(!isConnected) {
-			logger.error("Cannot connect to Intu!! Shutting down...");
-			return;
+		TopicClient client = TopicClient.getInstance();
+		client.setHeaders(SelfConfigurationConstants.SELF_ID, 
+				SelfConfigurationConstants.TOKEN);
+		client.connect(SelfConfigurationConstants.HOST, 
+				SelfConfigurationConstants.PORT);
+		while(!client.isConnected()) {
+			try {
+				System.out.println("Client not connected yet");
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
-		GameAgent agent = new GameAgent();
+		SayAgent agent = new SayAgent();
 		AgentSociety.getInstance().addAgent(agent, false);
 		
 		int i = 0;
