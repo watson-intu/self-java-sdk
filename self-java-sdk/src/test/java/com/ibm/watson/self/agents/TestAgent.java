@@ -53,7 +53,7 @@ public class TestAgent {
 				e.printStackTrace();
 			}
 		}
-		SayAgent agent = new SayAgent();
+		GameAgent agent = new GameAgent();
 		AgentSociety.getInstance().addAgent(agent, false);
 		
 		int i = 0;
