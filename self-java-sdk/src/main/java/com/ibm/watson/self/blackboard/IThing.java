@@ -94,26 +94,17 @@ public class IThing {
 				}
 			}
 		}
-		
-		if(data != null) {
-			for(Entry<String, JsonElement> entry : data.entrySet()) {
-				String key = entry.getKey();
-				if(entry.getValue().isJsonObject()) {
-					JsonObject value = entry.getValue().getAsJsonObject();
-					wrapperObject.add(key, value);
-				}
-				else {
-					String value = entry.getValue().getAsString();
-					wrapperObject.addProperty(key, value);
-				}
-			}
-		}
+
 		wrapperObject.addProperty(BlackBoardConstants.TYPE_, type);
 		wrapperObject.addProperty(BlackBoardConstants.CATEGORY, category.getId());
 		wrapperObject.addProperty(BlackBoardConstants.GUID, guid);
 		wrapperObject.addProperty(BlackBoardConstants.M_IMPORTANCE, importance);
 		wrapperObject.addProperty(BlackBoardConstants.M_STATE, state);
 		wrapperObject.addProperty(BlackBoardConstants.LIFE_SPAN, lifeSpan);
+		
+		if(data != null){
+			wrapperObject.add(BlackBoardConstants.DATA, data);
+		}
 		
 		if(dataType != null && !dataType.isEmpty()) {
 			wrapperObject.addProperty(BlackBoardConstants.DATA_TYPE, dataType);

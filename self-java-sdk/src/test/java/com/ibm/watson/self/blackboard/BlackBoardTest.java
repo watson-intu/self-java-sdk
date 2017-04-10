@@ -55,18 +55,19 @@ public class BlackBoardTest implements IBlackBoard {
 			}
 		}
 		BlackBoard.getInstance().subscribeToType("EmotionalState", ThingEventType.TE_ADDED, this, "");
-		JsonObject wrapperObject = new JsonObject();
-        wrapperObject.addProperty("m_Text", "greeting_interaction");
+		JsonObject bodyObject = new JsonObject();
+        bodyObject.addProperty("m_Text", "greeting_interaction");
         JsonObject dataObject = new JsonObject();
+        
         dataObject.addProperty("m_PersonGender", "female");
         dataObject.addProperty("m_PersonAge", "25-35");
         dataObject.addProperty("m_PersonName", "Erika");
         dataObject.addProperty("m_SensorName", "Camera1");
         dataObject.addProperty("m_SensorId", "asdf");
-        wrapperObject.add("m_Data", dataObject);
         IThing thing = new IThing();
         thing.setType("Text");
-        thing.setData(wrapperObject);
+        thing.setData(dataObject);
+        thing.setBody(bodyObject);
         BlackBoard.getInstance().addThing(thing, "");
 		
 		int i = 0;
