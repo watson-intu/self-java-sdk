@@ -1,13 +1,11 @@
 package com.ibm.watson.self.blackboard;
 
-import java.io.IOException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.gson.JsonObject;
 import com.ibm.watson.self.blackboard.IThing.ThingEventType;
 import com.ibm.watson.self.constants.SelfConfigurationConstants;
-import com.ibm.watson.self.topics.ConversationTest;
 import com.ibm.watson.self.topics.TopicClient;
 
 public class BlackBoardTest implements IBlackBoard {
@@ -43,12 +41,34 @@ public class BlackBoardTest implements IBlackBoard {
 	}
 	
 	public BlackBoardTest() {
-		boolean isConnected = connectToIntu();
-		if(!isConnected) {
-			logger.error("Cannot connect to Intu!! Shutting down...");
-			return;
+		TopicClient client = TopicClient.getInstance();
+		client.setHeaders(SelfConfigurationConstants.SELF_ID, 
+				SelfConfigurationConstants.TOKEN);
+		client.connect(SelfConfigurationConstants.HOST, 
+				SelfConfigurationConstants.PORT);
+		while(!client.isConnected()) {
+			try {
+				System.out.println("Client not connected yet");
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		BlackBoard.getInstance().subscribeToType("EmotionalState", ThingEventType.TE_ADDED, this, "");
+		JsonObject bodyObject = new JsonObject();
+        bodyObject.addProperty("m_Text", "greeting_interaction");
+        JsonObject dataObject = new JsonObject();
+        
+        dataObject.addProperty("m_PersonGender", "female");
+        dataObject.addProperty("m_PersonAge", "25-35");
+        dataObject.addProperty("m_PersonName", "Erika");
+        dataObject.addProperty("m_SensorName", "Camera1");
+        dataObject.addProperty("m_SensorId", "asdf");
+        IThing thing = new IThing();
+        thing.setType("Text");
+        thing.setData(dataObject);
+        thing.setBody(bodyObject);
+        BlackBoard.getInstance().addThing(thing, "");
 		
 		int i = 0;
 		while(i < 60) {

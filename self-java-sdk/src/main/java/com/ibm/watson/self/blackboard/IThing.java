@@ -94,12 +94,17 @@ public class IThing {
 				}
 			}
 		}
+
 		wrapperObject.addProperty(BlackBoardConstants.TYPE_, type);
 		wrapperObject.addProperty(BlackBoardConstants.CATEGORY, category.getId());
 		wrapperObject.addProperty(BlackBoardConstants.GUID, guid);
 		wrapperObject.addProperty(BlackBoardConstants.M_IMPORTANCE, importance);
 		wrapperObject.addProperty(BlackBoardConstants.M_STATE, state);
 		wrapperObject.addProperty(BlackBoardConstants.LIFE_SPAN, lifeSpan);
+		
+		if(data != null){
+			wrapperObject.add(BlackBoardConstants.DATA, data);
+		}
 		
 		if(dataType != null && !dataType.isEmpty()) {
 			wrapperObject.addProperty(BlackBoardConstants.DATA_TYPE, dataType);
