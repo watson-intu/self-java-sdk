@@ -94,6 +94,20 @@ public class IThing {
 				}
 			}
 		}
+		
+		if(data != null) {
+			for(Entry<String, JsonElement> entry : data.entrySet()) {
+				String key = entry.getKey();
+				if(entry.getValue().isJsonObject()) {
+					JsonObject value = entry.getValue().getAsJsonObject();
+					wrapperObject.add(key, value);
+				}
+				else {
+					String value = entry.getValue().getAsString();
+					wrapperObject.addProperty(key, value);
+				}
+			}
+		}
 		wrapperObject.addProperty(BlackBoardConstants.TYPE_, type);
 		wrapperObject.addProperty(BlackBoardConstants.CATEGORY, category.getId());
 		wrapperObject.addProperty(BlackBoardConstants.GUID, guid);
