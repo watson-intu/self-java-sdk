@@ -49,7 +49,7 @@ public class BlackBoard implements IEvent {
 			JsonObject wrapperObject = new JsonObject();
 			wrapperObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.SUBSCRIBE_TO_TYPE);
 			wrapperObject.addProperty(BlackBoardConstants.TYPE, type);
-			wrapperObject.addProperty(BlackBoardConstants.EVENT_MASK, thingEvent.getId());
+			wrapperObject.addProperty(BlackBoardConstants.EVENT_MASK, thingEvent.TE_ALL.getId());
 			TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, 
 					wrapperObject.toString(), false);
 			List<Subscriber> tempSubList = new ArrayList<Subscriber>();
@@ -176,7 +176,7 @@ public class BlackBoard implements IEvent {
 					someThing.setParentId(wrapperObject.get(BlackBoardConstants.PARENT).getAsString());
 				}
 				thingEvent.setThing(someThing);
-				thingMap.put(thingEvent.getThing().getGuid(), thingEvent.getThing());				
+				thingMap.put(thingEvent.getThing().getGuid(), thingEvent.getThing());
 			}
 			catch (Exception e) {
 				logger.error("Failed to deserialize Blackboard object!!");
@@ -238,7 +238,8 @@ public class BlackBoard implements IEvent {
 						Subscriber subscriber = sub.get(i);
 						if(subscriber.callback == null)
 							continue;
-						subscriber.callback.onThingEvent(thingEvent);
+						if(subscriber.eventType == thingEvent.getEventType())
+							subscriber.callback.onThingEvent(thingEvent);
 					}
 				}
 			}
@@ -272,8 +273,7 @@ public class BlackBoard implements IEvent {
 				wrapperObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.SUBSCRIBE_TO_TYPE);
 				wrapperObject.addProperty(BlackBoardConstants.TYPE, type);
 				Subscriber subscriber = subscriptionMap.get(path).get(type).get(0);
-				wrapperObject.addProperty(BlackBoardConstants.EVENT_MASK, 
-						subscriber.getEventType().getId());
+				wrapperObject.addProperty(BlackBoardConstants.EVENT_MASK, ThingEventType.TE_ALL.getId());
 				TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD, 
 						wrapperObject.toString(), false);
 			}

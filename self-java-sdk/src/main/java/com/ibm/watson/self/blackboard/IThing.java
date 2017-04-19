@@ -14,8 +14,10 @@ public class IThing {
 		TE_ADDED(1),
 		TE_REMOVED(2),
 		TE_STATE(4),
-		TE_IMPORTANCE(8);
-		
+		TE_IMPORTANCE(8),
+		TE_GUID(10),
+		TE_DATA(20),
+		TE_ALL(255);
 		
 		private int id;
 		
