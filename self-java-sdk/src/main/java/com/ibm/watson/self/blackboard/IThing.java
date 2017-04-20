@@ -95,6 +95,7 @@ public class IThing {
 	
 	/**
 	 * Convert the data into a map and return it
+	 * @return: the json object
 	 */
 	public JsonObject serialize() {
 		JsonObject wrapperObject = new JsonObject();
@@ -133,6 +134,7 @@ public class IThing {
 	
 	/**
 	 * Read attributes from a map and associate the values to this thing
+	 * @param wrapperObject: the json object
 	 */
 	public void deserialize(JsonObject wrapperObject) {
 		this.body = wrapperObject;

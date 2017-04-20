@@ -43,8 +43,9 @@ public class AgentSociety implements IEvent {
 	
 	/**
 	 * Add an agent to this society. The society takes ownership of the agent
-	 * @param agent
-	 * @param override
+	 * @param agent: The agent object
+	 * @param override: if true, then any agent with same id will be replaced and if false,
+	 * it will execute alongside existing gestures with same id
 	 */
 	public void addAgent(IAgent agent, boolean override) {
 		logger.entry();
@@ -63,7 +64,7 @@ public class AgentSociety implements IEvent {
 	
 	/**
 	 * Remove an agent from this society
-	 * @param agent
+	 * @param agent: agent object
 	 */
 	public void removeAgent(IAgent agent) {
 		logger.entry();
@@ -77,9 +78,10 @@ public class AgentSociety implements IEvent {
 		logger.exit();
 	}
 
-	/**
-	 * Callback that can add or remove proxy agents to and from the society
-	 */
+    /**
+     * Callback that can add or remove proxy agents to and from the society
+     * @param event: String representation of the event which can be parsed to a json object
+     */
 	public void onEvent(String event) {
 		logger.entry();
 		JsonParser parser = new JsonParser();

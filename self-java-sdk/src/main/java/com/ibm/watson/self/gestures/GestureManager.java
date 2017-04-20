@@ -90,6 +90,7 @@ public class GestureManager implements IEvent {
 
 	/**
 	 * Callback for different kinds of gesture-related events, such as adding and removing gesture proxies
+	 * @param event: the string representation of the event
 	 */
 	public void onEvent(String event) {
 		if(inputMap.size() == 0) {

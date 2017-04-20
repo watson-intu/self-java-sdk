@@ -100,9 +100,10 @@ public class TopicClient implements WebSocketListener {
 		return logger.exit(true);
 	}
 	
-    /**
-     * Send off the message via the WebSocket connection
-     */
+	/**
+	 * Send off the message via the WebSocket connection
+	 * @param message: message in the form of a json
+	 */
     public void sendMessage(JsonObject message) {
     	logger.entry();
     	try {
@@ -142,6 +143,9 @@ public class TopicClient implements WebSocketListener {
     
     /**
      * Publish data to the topic
+     * @param path: the path
+     * @param data: data in the form of key/ val pairs
+     * @param persisted: true if data needs to be persisted
      */
     public void publish(String path, String data, boolean persisted) {
     	logger.entry();
@@ -159,6 +163,9 @@ public class TopicClient implements WebSocketListener {
     
     /**
      * Publish binary data to the topic
+     * @param path: the path
+     * @param data: binary data
+     * @param persisted: true if data needs to be persisted
      */
     public void publish(String path, byte[] data, boolean persisted) {
     	logger.entry();
@@ -175,6 +182,8 @@ public class TopicClient implements WebSocketListener {
 
     /**
      * Subscribe to a topic if possible
+     * @param path: the path
+     * @param event: the event to subscribe to
      */
 	public void subscribe(String path, IEvent event) {
 		logger.entry();
@@ -192,6 +201,9 @@ public class TopicClient implements WebSocketListener {
     
 	/**
 	 * Unsubscribe from a given topic
+	 * @param path: the path
+	 * @param event: the event to unsubscribe from
+	 * @return: true if successfully unscubscribed
 	 */
     public boolean unsubscribe(String path, IEvent event) {
     	logger.entry();
@@ -261,6 +273,7 @@ public class TopicClient implements WebSocketListener {
 
 	/**
 	 * Handle incoming messages
+	 * @param message: the incoming message
 	 */
 	public void onMessage(ResponseBody message) throws IOException {
 		logger.entry();

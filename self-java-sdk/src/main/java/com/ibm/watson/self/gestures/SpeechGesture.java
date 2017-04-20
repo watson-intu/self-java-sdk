@@ -42,6 +42,7 @@ public class SpeechGesture implements IGesture {
 
 	/**
 	 * Execute the speech gesture
+	 * @param params: the json object
 	 */
 	public boolean execute(JsonObject params) {
 		String text  = params.get("text").getAsString();
