@@ -8,6 +8,9 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
 
+/**
+ * Collects audio data from the local device
+ */
 public class MicrophoneSensor implements ISensor {
 
 	private boolean isStarted = false;
@@ -50,6 +53,9 @@ public class MicrophoneSensor implements ISensor {
 			return "audio/L16;rate=" + rate + ";channels=" + channel;
 	}
 
+	/**
+	 * start streaming
+	 */
 	public boolean onStart() {
 		isStarted = true;
 		System.out.println("OnStart() called for MicrophoneSensor");
@@ -63,19 +69,32 @@ public class MicrophoneSensor implements ISensor {
 		return true;
 	}
 
+	/**
+	 * Terminate the streaming session
+	 */
 	public boolean onStop() {
 		isStarted = false;
 		return true;
 	}
 
+	/**
+	 * pause streaming
+	 */
 	public void onPause() {
 		isPaused = true;
 	}
 
+	/**
+	 * Resume the paused streaming
+	 */
 	public void onResume() {
 		isPaused = false;
 	}
 	
+	/**
+	 * Send data in byte form
+	 * @param buffer
+	 */
 	public void sendData(byte[] buffer) {
 		if(!isPaused)
 			SensorManager.getInstance().sendData(this, buffer);
@@ -103,8 +122,7 @@ public class MicrophoneSensor implements ISensor {
     	}
     }
     
-    class CaptureAudio implements Runnable {
-    	
+    class CaptureAudio implements Runnable { 	
 		public void run() {
 			while(isStarted) {
 				if(!isPaused) {

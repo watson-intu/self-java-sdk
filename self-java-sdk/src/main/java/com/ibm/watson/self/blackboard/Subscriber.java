@@ -2,6 +2,9 @@ package com.ibm.watson.self.blackboard;
 
 import com.ibm.watson.self.blackboard.IThing.ThingEventType;
 
+/**
+ * A data structure to represent a subscriber's callback, path, and the event it is interested in
+ */
 public class Subscriber {
 
 	public IBlackBoard callback;

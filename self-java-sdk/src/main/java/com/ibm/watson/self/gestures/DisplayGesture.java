@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import com.google.gson.JsonObject;
 
+/**
+ * This gesture wraps the local display so that Intu can display to the user
+ */
 public class DisplayGesture implements IGesture {
 
 	private String instanceId;

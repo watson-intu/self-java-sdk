@@ -9,12 +9,13 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.ibm.watson.self.agents.AgentSociety;
-import com.ibm.watson.self.sensors.ISensor;
 import com.ibm.watson.self.sensors.SensorConstants;
 import com.ibm.watson.self.topics.IEvent;
 import com.ibm.watson.self.topics.TopicClient;
 
+/**
+ * Manages all gestures available to the local Intu instance
+ */
 public class GestureManager implements IEvent {
 
 	private static GestureManager instance = null;
@@ -30,6 +31,9 @@ public class GestureManager implements IEvent {
 		started = true;
 	}
 	
+	/**
+	 * Return a Singleton instance of the gesture manager
+	 */
 	public static GestureManager getInstance() {
 		if(instance == null) {
 			instance = new GestureManager();
@@ -85,7 +89,7 @@ public class GestureManager implements IEvent {
 	}
 
 	/**
-	 * Received when message is returned from remote self
+	 * Callback for different kinds of gesture-related events, such as adding and removing gesture proxies
 	 */
 	public void onEvent(String event) {
 		if(inputMap.size() == 0) {

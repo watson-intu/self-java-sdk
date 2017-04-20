@@ -11,6 +11,10 @@ import com.ibm.watson.self.blackboard.IThing;
 import com.ibm.watson.self.blackboard.ThingEvent;
 import com.ibm.watson.self.blackboard.IThing.ThingEventType;
 
+/**
+ * The agent perfoms gestures based on the beats of the music
+ *
+ */
 public class MusicAgent implements IAgent, IBlackBoard {
 
 	private static Logger logger = LogManager.getLogger(GameAgent.class.getName());

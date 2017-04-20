@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import com.google.gson.JsonObject;
 
+/**
+ * This gesture wraps the local animation
+ */
 public class AnimateGesture implements IGesture {
 
 	private String instanceId;

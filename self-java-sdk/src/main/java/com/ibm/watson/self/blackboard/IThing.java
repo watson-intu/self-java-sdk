@@ -7,8 +7,15 @@ import java.util.UUID;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+/**
+ * Represents all objects that can be added to the blackboard
+ */
 public class IThing {
 
+	/**
+	 * Represents different types of an event related to things such as
+     * whether a thing has been added, removed, or changed
+	 */
 	public enum ThingEventType {
 		TE_NONE(0),
 		TE_ADDED(1),
@@ -30,6 +37,11 @@ public class IThing {
 		}
 	}
 	
+	/**
+	 * Intu supports different types of things. Things belonging to different
+     * types are not attached to each other directly but rather a proxy is created
+     * and connected via GUID
+	 */
     public enum ThingCategory
     {
 	    TT_INVALID(-1),
@@ -81,6 +93,9 @@ public class IThing {
         setLifeSpan(3600.0);
     }
 	
+	/**
+	 * Convert the data into a map and return it
+	 */
 	public JsonObject serialize() {
 		JsonObject wrapperObject = new JsonObject();
 		if(body != null) {
@@ -116,6 +131,9 @@ public class IThing {
 		return wrapperObject;
 	}
 	
+	/**
+	 * Read attributes from a map and associate the values to this thing
+	 */
 	public void deserialize(JsonObject wrapperObject) {
 		this.body = wrapperObject;
 		this.type = wrapperObject.get(BlackBoardConstants.TYPE_).getAsString();

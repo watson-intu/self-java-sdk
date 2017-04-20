@@ -6,6 +6,9 @@ import com.google.gson.JsonObject;
 import com.ibm.watson.self.sensors.ISensor;
 import com.ibm.watson.self.sensors.SensorManager;
 
+/**
+ * This gesture wraps the local speech synthesis so that Intu can speak
+ */
 public class SpeechGesture implements IGesture {
 
 	private String instanceId;
@@ -23,14 +26,23 @@ public class SpeechGesture implements IGesture {
 		return instanceId;
 	}
 
+	/**
+	 * Stub representing the start of the gesture
+	 */
 	public boolean onStart() {
 		return true;
 	}
 
+	/**
+	 * Stub representing the stopping of the gesture
+	 */
 	public boolean onStop() {
 		return true;
 	}
 
+	/**
+	 * Execute the speech gesture
+	 */
 	public boolean execute(JsonObject params) {
 		String text  = params.get("text").getAsString();
 		String gender = params.get("gender").getAsString();
