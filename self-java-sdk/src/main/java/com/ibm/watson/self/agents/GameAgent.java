@@ -16,6 +16,11 @@ import com.ibm.watson.self.blackboard.IThing;
 import com.ibm.watson.self.blackboard.ThingEvent;
 import com.ibm.watson.self.blackboard.IThing.ThingEventType;
 
+/**
+ * This agent entertains a person by starting a game on game_intent. When the game is started, it plays sound of an animal 
+ * which is to be guessed. The player is given three chances for wrong answers.
+ *
+ */
 public class GameAgent implements IAgent, IBlackBoard {
 
 	private static Logger logger = LogManager.getLogger(GameAgent.class.getName());

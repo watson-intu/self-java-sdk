@@ -1,16 +1,17 @@
 package com.ibm.watson.self.topics;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.URI;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -23,14 +24,10 @@ import okhttp3.ws.WebSocketCall;
 import okhttp3.ws.WebSocketListener;
 import okio.Buffer;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
-
+/**
+ * A client to make WebSocket connections to the TopicManager. This
+ * enables the user to access publish/subscribe events on the instance
+ */
 public class TopicClient implements WebSocketListener {
 
 	/*          Logging                 */
@@ -57,6 +54,9 @@ public class TopicClient implements WebSocketListener {
     	this.listener = this;
     }
     
+    /**
+     * Sometimes the TopicClient needs to be re-instantiated
+     */
     public static TopicClient getInstance() {
     	if(instance == null) {
     		instance = new TopicClient();
@@ -100,10 +100,10 @@ public class TopicClient implements WebSocketListener {
 		return logger.exit(true);
 	}
 	
-    /**
-     * Send a message.
-     * @param message
-     */
+	/**
+	 * Send off the message via the WebSocket connection
+	 * @param message: message in the form of a json
+	 */
     public void sendMessage(JsonObject message) {
     	logger.entry();
     	try {
@@ -141,6 +141,12 @@ public class TopicClient implements WebSocketListener {
 		logger.exit();
 	}
     
+    /**
+     * Publish data to the topic
+     * @param path: the path
+     * @param data: data in the form of key/ val pairs
+     * @param persisted: true if data needs to be persisted
+     */
     public void publish(String path, String data, boolean persisted) {
     	logger.entry();
     	JsonObject wrapperObject = new JsonObject();
@@ -155,6 +161,12 @@ public class TopicClient implements WebSocketListener {
     	logger.exit();
     }
     
+    /**
+     * Publish binary data to the topic
+     * @param path: the path
+     * @param data: binary data
+     * @param persisted: true if data needs to be persisted
+     */
     public void publish(String path, byte[] data, boolean persisted) {
     	logger.entry();
     	JsonObject wrapperObject = new JsonObject();
@@ -168,6 +180,11 @@ public class TopicClient implements WebSocketListener {
     	logger.exit();
     }
 
+    /**
+     * Subscribe to a topic if possible
+     * @param path: the path
+     * @param event: the event to subscribe to
+     */
 	public void subscribe(String path, IEvent event) {
 		logger.entry();
     	if(!subscriptionMap.containsKey(path)) {
@@ -182,6 +199,12 @@ public class TopicClient implements WebSocketListener {
     	logger.exit();
     }
     
+	/**
+	 * Unsubscribe from a given topic
+	 * @param path: the path
+	 * @param event: the event to unsubscribe from
+	 * @return: true if successfully unscubscribed
+	 */
     public boolean unsubscribe(String path, IEvent event) {
     	logger.entry();
     	if(subscriptionMap.containsKey(path)) {
@@ -248,6 +271,10 @@ public class TopicClient implements WebSocketListener {
 		}
 	}
 
+	/**
+	 * Handle incoming messages
+	 * @param message: the incoming message
+	 */
 	public void onMessage(ResponseBody message) throws IOException {
 		logger.entry();
 		String response = message.string();

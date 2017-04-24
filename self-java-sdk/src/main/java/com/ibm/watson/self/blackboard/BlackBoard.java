@@ -13,6 +13,9 @@ import com.ibm.watson.self.blackboard.IThing.ThingEventType;
 import com.ibm.watson.self.topics.IEvent;
 import com.ibm.watson.self.topics.TopicClient;
 
+/**
+ * Represents the central publish/subscribe system for all agents, classifiers, and extractors
+ */
 public class BlackBoard implements IEvent {
 
 	private static BlackBoard instance = null;
@@ -34,7 +37,14 @@ public class BlackBoard implements IEvent {
 		
 		return instance;
 	}
-	
+
+	/**
+	 * Subscribe to any objects of a given type that get put on the blackboard
+	 * @param type: The type 
+	 * @param thingEvent: Represents different types of an event related to things such as whether a thing has been added, removed, or changed
+	 * @param blackboard: the blackboard object
+	 * @param path: the key to the subscription map
+	 */
 	public void subscribeToType(String type, IThing.ThingEventType thingEvent, 
 			IBlackBoard blackboard, String path) {
 		logger.entry();
@@ -60,6 +70,12 @@ public class BlackBoard implements IEvent {
 		logger.exit();
 	}
 	
+	/**
+	 * Unsubscribe from a given type of objects that get put on the blackboard
+	 * @param type: The type
+	 * @param blackboard: The blackboard object
+	 * @param path: the key to the subscription map
+	 */
 	public void unsubscribeFromType(String type, IBlackBoard blackboard, String path) {
 		logger.entry();
 		if(subscriptionMap.containsKey(path)) {
@@ -96,6 +112,12 @@ public class BlackBoard implements IEvent {
 		logger.exit();
 	}
 	
+	/**
+	 * Add a concept to this blackboard, which will be automatically
+     * connected to other concepts to produce a goal in the end
+	 * @param thing: represents object that can be added to the backboard
+	 * @param path: the path
+	 */
 	public void addThing(IThing thing, String path) {
 		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
@@ -114,6 +136,11 @@ public class BlackBoard implements IEvent {
 		removeThing(thing.getGuid(), path);
 	}
 	
+	/**
+	 * Remove a specific thing from the blackboard
+	 * @param guid: the unique id given at the time of creation
+	 * @param path: the path
+	 */
 	public void removeThing(String guid, String path) {
 		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
@@ -129,6 +156,13 @@ public class BlackBoard implements IEvent {
 		setState(guid, state, path);
 	}
 	
+	/**
+	 *
+	 * Publish a given state to a given path on the blackboard
+	 * @param guid: the unique id given at the time of creation
+	 * @param state: the state of the thing
+	 * @param path: the path
+	 */
 	public void setState(String guid, String state, String path) {
 		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
@@ -144,6 +178,12 @@ public class BlackBoard implements IEvent {
 		setImportance(thing.getGuid(), thing.getImportance(), path);
 	}
 	
+	/**
+	 * Publish a given level of importance to a given path on the blackboard
+	 * @param guid: the unique id given at the time of creation
+	 * @param importance: the priority
+	 * @param path: the path
+	 */
 	public void setImportance(String guid, double importance, String path) {
 		logger.entry();
 		JsonObject wrapperObject = new JsonObject();
@@ -155,6 +195,10 @@ public class BlackBoard implements IEvent {
 		logger.exit();
 	}
 
+	/**
+	 * Invoke this method to pass an event to all subscribers for a given object type
+	 * @param event: the event description in the form of string
+	 */
 	public void onEvent(String event) {
 		logger.entry();
 		JsonParser parser = new JsonParser();

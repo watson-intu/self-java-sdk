@@ -3,6 +3,9 @@ package com.ibm.watson.self.blackboard;
 import com.google.gson.JsonObject;
 import com.ibm.watson.self.blackboard.IThing.ThingEventType;
 
+/**
+ * Represents an add, remove, or state change (and others) event that can happen to a thing
+ */
 public class ThingEvent {
 
 	private ThingEventType eventType;

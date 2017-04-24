@@ -15,6 +15,10 @@ import com.ibm.watson.self.blackboard.IThing.ThingEventType;
 import com.ibm.watson.self.sensors.ILocalSensorSubscriber;
 import com.ibm.watson.self.sensors.SensorManager;
 
+/**
+ * This agent takes a snapshot of a person on photography_intent. In case it cannot see the person,
+ * it would give a notification saying it cannot see. 
+ */
 public class PhotographyAgent implements IAgent, IBlackBoard, ILocalSensorSubscriber {
 	
 	private static Logger logger = LogManager.getLogger(PhotographyAgent.class.getName());

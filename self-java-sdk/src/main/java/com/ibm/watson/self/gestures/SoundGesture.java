@@ -3,7 +3,9 @@ package com.ibm.watson.self.gestures;
 import java.util.UUID;
 
 import com.google.gson.JsonObject;
-
+/**
+ * This gesture wraps the local sound synthesis so that Intu can play various sounds
+ */
 public class SoundGesture implements IGesture {
 
 	private String instanceId;

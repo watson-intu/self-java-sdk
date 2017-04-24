@@ -7,11 +7,13 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.ibm.watson.self.sensors.ISensor;
 import com.ibm.watson.self.sensors.SensorConstants;
 import com.ibm.watson.self.topics.IEvent;
 import com.ibm.watson.self.topics.TopicClient;
 
+/**
+ * Represents a collection of agents running at a given time
+ */
 public class AgentSociety implements IEvent {
 
 	public static AgentSociety instance = null;
@@ -39,6 +41,12 @@ public class AgentSociety implements IEvent {
 		return agentMap.containsKey(agent.getAgentId());
 	}
 	
+	/**
+	 * Add an agent to this society. The society takes ownership of the agent
+	 * @param agent: The agent object
+	 * @param override: if true, then any agent with same id will be replaced and if false,
+	 * it will execute alongside existing gestures with same id
+	 */
 	public void addAgent(IAgent agent, boolean override) {
 		logger.entry();
 		if(!agentMap.containsKey(agent.getAgentId())) {
@@ -54,6 +62,10 @@ public class AgentSociety implements IEvent {
 		logger.exit();
 	}
 	
+	/**
+	 * Remove an agent from this society
+	 * @param agent: agent object
+	 */
 	public void removeAgent(IAgent agent) {
 		logger.entry();
 		if(agentMap.containsKey(agent.getAgentId())) {
@@ -66,6 +78,10 @@ public class AgentSociety implements IEvent {
 		logger.exit();
 	}
 
+    /**
+     * Callback that can add or remove proxy agents to and from the society
+     * @param event: String representation of the event which can be parsed to a json object
+     */
 	public void onEvent(String event) {
 		logger.entry();
 		JsonParser parser = new JsonParser();
@@ -106,6 +122,9 @@ public class AgentSociety implements IEvent {
 		return started;
 	}
 
+	/**
+	 * Unsubscribe from the agent-society topic
+	 */
 	public void shutdown() {
 		started = false;
 		TopicClient.getInstance().unsubscribe(AgentConstants.AGENT_SOCIETY, this);

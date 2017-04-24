@@ -7,10 +7,12 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.ibm.watson.self.agents.AgentSociety;
 import com.ibm.watson.self.topics.IEvent;
 import com.ibm.watson.self.topics.TopicClient;
 
+/**
+ * Responsible for initializing all sensor objects for the local environment
+ */
 public class SensorManager implements IEvent {
 
 	private static SensorManager instance = null;

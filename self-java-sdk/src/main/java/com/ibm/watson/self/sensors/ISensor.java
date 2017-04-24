@@ -1,5 +1,10 @@
 package com.ibm.watson.self.sensors;
 
+/**
+ * Represents all sensors that can receive some type of data from an
+ * external source, e.g. video camera, microphone, or data through a
+ * connected socket 
+ */
 public interface ISensor {
 
     /**
