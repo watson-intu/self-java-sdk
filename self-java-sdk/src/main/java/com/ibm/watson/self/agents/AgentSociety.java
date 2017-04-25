@@ -146,8 +146,6 @@ public class AgentSociety implements IEvent {
 			wrapperObject.addProperty(AgentConstants.NAME, agent.getAgentName());
 			wrapperObject.addProperty(AgentConstants.OVERRIDE, overrideMap.get(agentId));
 			TopicClient.getInstance().publish(AgentConstants.AGENT_SOCIETY, wrapperObject.toString(), false);
-			TopicClient.getInstance().publish(SensorConstants.SENSOR_MANAGER, 
-					wrapperObject.toString(), false);
 		}
 	}
 }
