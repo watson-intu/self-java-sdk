@@ -1,12 +1,15 @@
 package com.ibm.watson.self.sensors;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.ibm.watson.self.extractors.IFeatureExtractor;
 import com.ibm.watson.self.topics.IEvent;
 import com.ibm.watson.self.topics.TopicClient;
 
@@ -19,7 +22,7 @@ public class SensorManager implements IEvent {
 	private boolean started = false;
 	private HashMap<String, ISensor> sensorMap = new HashMap<String, ISensor>();
 	private HashMap<String, Boolean> overridesMap = new HashMap<String, Boolean>();
-	private HashMap<ILocalSensorSubscriber, String> subscriberMap = new HashMap<ILocalSensorSubscriber, String>();
+	private Set<IFeatureExtractor> subscriberList = new HashSet<IFeatureExtractor>();
 	
 	private static Logger logger = LogManager.getLogger(SensorManager.class.getName());
 	
@@ -83,11 +86,10 @@ public class SensorManager implements IEvent {
 			TopicClient.getInstance().publish(SensorConstants.SENSOR_PROXY + sensor.getSensorId(), 
 					data, false);
 		}
-		
-		for(ILocalSensorSubscriber key : subscriberMap.keySet())
-		{
-			if(sensor.getDataType().equals(subscriberMap.get(key))) {
-				key.getBinaryData(data);
+				
+		for(IFeatureExtractor extractor : subscriberList) {
+			if(extractor.getBinaryData().equals(sensor.getBinaryType())) {
+				extractor.onData(data);
 			}
 		}
 		logger.exit();
@@ -130,16 +132,19 @@ public class SensorManager implements IEvent {
 	}
 	
 	/**
-	 * Register with local sensors to receive data
-	 * @param photographyAgent
-	 * @param string
+	 * Add extractor to subscriber to get notified when sensor is producing data
+	 * @param extractor - extractor to be added
 	 */
-	public void registerWithLocalSensor(ILocalSensorSubscriber subscriber, String dataType) {
-		subscriberMap.put(subscriber, dataType);
+	public void addSubscriber(IFeatureExtractor extractor) {
+		subscriberList.add(extractor);
 	}
 	
-	public void unregisterWithLocalSensor(ILocalSensorSubscriber subscriber) {
-		subscriberMap.remove(subscriber);
+	/**
+	 * Remove extractor from subscriber list
+	 * @param extractor - extractor to be removed
+	 */
+	public void removeSubscriber(IFeatureExtractor extractor) {
+		subscriberList.remove(extractor);
 	}
 
 	public void onEvent(String event) {
