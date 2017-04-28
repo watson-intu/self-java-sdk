@@ -15,10 +15,17 @@ public interface IFeatureExtractor {
 	public String getFeatureExtractorId();
 	
 	/**
+	 * Returns binary data type that the extractor 
+	 * subscribes to
+	 * @return
+	 */
+	public String getBinaryData();
+	
+	/**
 	 * This gets called when the feature extractor has
 	 * registered itself and is told to start up
 	 * @return
-	 */
+	 */	
 	public boolean onStart();
 	
 	/**
@@ -27,4 +34,11 @@ public interface IFeatureExtractor {
 	 * @return
 	 */
 	public boolean onStop();
+	
+	/**
+	 * Callback for all extractors for when data from 
+	 * a sensor is produced
+	 * @param data - binary data produced by sensor
+	 */
+	public void onData(byte[] data);
 }

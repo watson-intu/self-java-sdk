@@ -93,7 +93,7 @@ public class PhotographyAgent implements IAgent, IBlackBoard, ILocalSensorSubscr
 	
 	private void onObject(IThing thing) {
 		logger.info("Received onObject() with: " + thing.toString());
-		SensorManager.getInstance().registerWithLocalSensor(this, "VideoData");
+//		SensorManager.getInstance().registerWithLocalSensor(this, "VideoData");
 	}
 	
 	public void getData(String data) {
@@ -103,7 +103,7 @@ public class PhotographyAgent implements IAgent, IBlackBoard, ILocalSensorSubscr
 	public void getBinaryData(byte[] data) {
 		// TODO: Send Binary Data from here
 		logger.info("Received binary data!");
-		SensorManager.getInstance().unregisterWithLocalSensor(this);
+//		SensorManager.getInstance().unregisterWithLocalSensor(this);
 		
 	}
 
