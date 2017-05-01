@@ -24,7 +24,7 @@ public class BlackBoardConstants {
 	public static final String ADDED					= "ADDED";
 	public static final String TYPE_					= "Type_";
 	public static final String CATEGORY					= "m_eCategory";
-	public static final String GUID						= "m_GUID";
+	public static final String GUID						= "GUID_";
 	public static final String M_IMPORTANCE				= "m_fImportance";
 	public static final String M_STATE					= "m_State";
 	public static final String LIFE_SPAN				= "m_fLifeSpan";
