@@ -17,6 +17,7 @@ public class BlackBoardConstants {
 	public static final String STATE					= "state";
 	public static final String SET_OBJECT_IMPORTANCE	= "set_object_importance";
 	public static final String IMPORTANCE				= "importance";
+	public static final String GET_PARENT				= "get_parent";
 	public static final String FAILED_EVENT				= "failed_event";
 	public static final String ERROR					= "error";
 	

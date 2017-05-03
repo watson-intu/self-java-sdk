@@ -194,6 +194,16 @@ public class BlackBoard implements IEvent {
 				wrapperObject.toString(), false);
 		logger.exit();
 	}
+	
+	public void getParent(String guid, String path) {
+		logger.entry();
+		JsonObject wrapperObject = new JsonObject();
+		wrapperObject.addProperty(BlackBoardConstants.EVENT, BlackBoardConstants.GET_PARENT);
+		wrapperObject.addProperty(BlackBoardConstants.THING_GUID, guid);
+		TopicClient.getInstance().publish(path + BlackBoardConstants.BLACKBOARD,
+				wrapperObject.toString(), false);
+		logger.exit();
+	}
 
 	/**
 	 * Invoke this method to pass an event to all subscribers for a given object type
