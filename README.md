@@ -1,5 +1,5 @@
 # self-java-sdk
-Java SDK for SELF
+Java SDK for SELF 
 
 Configuration:
 
